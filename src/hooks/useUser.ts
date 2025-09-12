@@ -2,7 +2,13 @@ import { useQuery } from "@tanstack/react-query";
 import { useAppwrite } from "@/components/AppwriteProvider";
 import { Models } from "appwrite";
 
-export function useUser({ authenticated }: { authenticated: boolean }): Models.User | undefined {
+type UserProps = {
+  authenticated: boolean;
+};
+
+type UserReturnType = Models.User | undefined;
+
+export function useUser({ authenticated }: UserProps): UserReturnType {
   const { account } = useAppwrite();
 
   const { data: session } = useQuery({

@@ -1,11 +1,21 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAppwrite } from "@/components/AppwriteProvider";
 
-export function useSignIn({
-  setAuthenticated,
-}: {
+type SignInProps = {
   setAuthenticated: (authenticated: boolean) => void;
-}) {
+};
+
+type SignInReturnType = {
+  isPending: boolean;
+  emailPassword: (props: {
+    email: string;
+    password: string;
+    onSuccess?: () => void;
+    onError?: (error: Error) => void;
+  }) => Promise<void>;
+};
+
+export function useSignIn({ setAuthenticated }: SignInProps): SignInReturnType {
   const { account } = useAppwrite();
   const queryClient = useQueryClient();
 
@@ -20,9 +30,9 @@ export function useSignIn({
       onError?: (error: Error) => void;
     }) => account.createEmailPasswordSession({ email, password }),
     onSuccess: (session, { onSuccess }) => {
+      setAuthenticated(true);
       queryClient.setQueryData(["auth", "session"], session);
       queryClient.invalidateQueries({ queryKey: ["auth", "user"] });
-      setAuthenticated(true);
       onSuccess?.();
     },
     onError: (error, { onError }) => {
@@ -32,17 +42,7 @@ export function useSignIn({
 
   return {
     isPending,
-    emailPassword: async ({
-      email,
-      password,
-      onSuccess,
-      onError,
-    }: {
-      email: string;
-      password: string;
-      onSuccess?: () => void;
-      onError?: (error: Error) => void;
-    }) => {
+    emailPassword: async ({ email, password, onSuccess, onError }) => {
       signInWithEmailPassword({ email, password, onSuccess, onError });
     },
   };

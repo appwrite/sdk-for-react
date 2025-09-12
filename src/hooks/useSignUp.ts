@@ -2,7 +2,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAppwrite } from "@/components/AppwriteProvider";
 import { ID } from "appwrite";
 
-export function useSignUp() {
+type SignUpReturnType = {
+  isPending: boolean;
+  emailPassword: (props: { email: string, password: string, onSuccess?: () => void, onError?: (error: Error) => void }) => Promise<void>;
+};
+
+export function useSignUp(): SignUpReturnType {
   const { account } = useAppwrite();
   const queryClient = useQueryClient();
 
@@ -25,11 +30,6 @@ export function useSignUp() {
       password,
       onSuccess,
       onError,
-    }: {
-      email: string;
-      password: string;
-      onSuccess?: () => void;
-      onError?: (error: Error) => void;
     }) => {
       signUpWithEmailPassword({ email, password, onSuccess, onError });
     },
