@@ -13,6 +13,9 @@ export default defineConfig({
       format: "cjs",
     },
   ],
+  resolve: {
+    tsconfigFilename: "tsconfig.json",
+  },
   platform: "browser",
   external: ["react", "react-dom", "react/jsx-runtime"],
   plugins: [dts({ outDirs: ["dist/esm", "dist/cjs"] })],
