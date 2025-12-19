@@ -3,6 +3,18 @@
   "private": true,
   "version": "0.0.1",
   "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
   "scripts": {
     "build": "rolldown -c rolldown.config.ts"
   },
@@ -10,8 +22,7 @@
     "@tanstack/react-query": "^5.87.4",
     "appwrite": "^20.0.0",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1",
-    "zod": "^4.1.7"
+    "react-dom": "^19.1.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",

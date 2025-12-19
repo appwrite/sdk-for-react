@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "target": "es2019", // Or a later ES version depending on your target environment
-    "module": "esnext",
+    "target": "ES2020", // Or a later ES version depending on your target environment
+    "module": "ESNext",
     "lib": ["dom", "dom.iterable", "esnext"],
     "jsx": "react-jsx", // Or "react" for older React versions
     "declaration": true, // Essential for SDKs to generate .d.ts files
@@ -11,11 +11,12 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node", // Or "bundler" if using a modern bundler like Vite/Webpack 5
+    "moduleResolution": "bundler", // Or "bundler" if using a modern bundler like Vite/Webpack 5
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "isolatedModules": true, // Recommended for build tools like Babel/SWC
     "noEmit": false, // Set to false when building an SDK
+    "emitDeclarationOnly": true,
     "sourceMap": true, // Recommended for debugging
     "paths": {
       "@/*": ["./src/*"]
