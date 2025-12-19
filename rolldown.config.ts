@@ -1,7 +1,8 @@
 import { defineConfig } from "rolldown";
-
+import dts from "unplugin-dts/rolldown";
+ 
 export default defineConfig({
-  input: "src/index.ts",
+  input: "./src/index.ts",
   output: [
     {
       file: "dist/esm/index.js",
@@ -12,7 +13,7 @@ export default defineConfig({
       format: "cjs",
     },
   ],
-  tsconfig: "tsconfig.json",
   platform: "browser",
   external: ["react", "react-dom", "react/jsx-runtime"],
+  plugins: [dts({ outDirs: ["dist/esm", "dist/cjs"] })],
 });
