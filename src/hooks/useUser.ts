@@ -1,27 +1,40 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAppwrite } from "@/components/AppwriteProvider";
 import { Models } from "appwrite";
+import { useEffect } from "react";
 
-type UserProps = {
-  authenticated: boolean;
+type UserReturnType = {
+  user: Models.User<Models.Preferences> | undefined;
+  isLoading: boolean;
 };
 
-type UserReturnType = Models.User | undefined;
+export function useUser(): UserReturnType {
+  const { account, authenticated, setAuthenticated } = useAppwrite();
 
-export function useUser({ authenticated }: UserProps): UserReturnType {
-  const { account } = useAppwrite();
-
-  const { data: session } = useQuery({
+  // Check for existing session on mount
+  const { data: session, isLoading: isSessionLoading } = useQuery({
     queryKey: ["auth", "session"],
     queryFn: () => account.getSession({ sessionId: "current" }),
-    enabled: authenticated,
+    retry: false,
+    staleTime: Infinity,
   });
 
-  const { data: user } = useQuery({
+  // Update authenticated state when session is found
+  useEffect(() => {
+    if (session && !authenticated) {
+      setAuthenticated(true);
+    }
+  }, [session, authenticated, setAuthenticated]);
+
+  const { data: user, isLoading: isUserLoading } = useQuery({
     queryKey: ["auth", "user"],
     queryFn: () => account.get(),
     enabled: !!session,
+    retry: false,
   });
 
-  return user;
+  return {
+    user,
+    isLoading: isSessionLoading || (!!session && isUserLoading),
+  };
 }

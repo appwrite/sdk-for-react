@@ -4,34 +4,38 @@ import { ID } from "appwrite";
 
 type SignUpReturnType = {
   isPending: boolean;
-  emailPassword: (props: { email: string, password: string, onSuccess?: () => void, onError?: (error: Error) => void }) => Promise<void>;
+  emailPassword: (props: { email: string; password: string; onSuccess?: () => void; onError?: (error: Error) => void }) => void;
 };
 
 export function useSignUp(): SignUpReturnType {
-  const { account } = useAppwrite();
+  const { account, setAuthenticated } = useAppwrite();
   const queryClient = useQueryClient();
 
   const { mutate: signUpWithEmailPassword, isPending } = useMutation({
-    mutationFn: ({ email, password }: { email: string; password: string; onSuccess?: () => void; onError?: (error: Error) => void }) =>
-      account.create({  userId: ID.unique(), email, password }),
-    onSuccess: (_, { onSuccess }) => {
-      queryClient.invalidateQueries({ queryKey: ["auth", "user"] });
-      onSuccess?.();
+    mutationFn: async ({ email, password }: { email: string; password: string }) => {
+      // Create the user account
+      await account.create({ userId: ID.unique(), email, password });
+      // Automatically sign in after signup
+      const session = await account.createEmailPasswordSession({ email, password });
+      return session;
     },
-    onError: (error, { onError }) => {
-      onError?.(error);
+    onSuccess: (session) => {
+      setAuthenticated(true);
+      queryClient.setQueryData(["auth", "session"], session);
+      queryClient.invalidateQueries({ queryKey: ["auth", "user"] });
     },
   });
 
   return {
     isPending,
-    emailPassword: async ({
-      email,
-      password,
-      onSuccess,
-      onError,
-    }) => {
-      signUpWithEmailPassword({ email, password, onSuccess, onError });
+    emailPassword: ({ email, password, onSuccess, onError }) => {
+      signUpWithEmailPassword(
+        { email, password },
+        {
+          onSuccess: () => onSuccess?.(),
+          onError: (error) => onError?.(error),
+        }
+      );
     },
   };
 }

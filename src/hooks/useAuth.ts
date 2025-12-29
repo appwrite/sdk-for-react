@@ -1,26 +1,27 @@
-import { useState } from "react";
 import { useUser } from "./useUser";
 import { useSignIn } from "./useSignIn";
 import { useSignOut } from "./useSignOut";
 import { useSignUp } from "./useSignUp";
+import { useOAuth } from "./useOAuth";
 import { Models } from "appwrite";
 
 type AuthReturnType = {
-  user?: Models.User;
+  user: Models.User<Models.Preferences> | undefined;
+  isLoading: boolean;
   signUp: ReturnType<typeof useSignUp>;
   signIn: ReturnType<typeof useSignIn>;
   signOut: ReturnType<typeof useSignOut>;
+  oAuth: ReturnType<typeof useOAuth>;
 }
 
 export function useAuth(): AuthReturnType {
-  const [authenticated, setAuthenticated] = useState(false);
-  
-  const user = useUser({ authenticated });
+  const { user, isLoading } = useUser();
   const signUp = useSignUp();
-  const signIn = useSignIn({ setAuthenticated });
-  const signOut = useSignOut({ setAuthenticated });
+  const signIn = useSignIn();
+  const signOut = useSignOut();
+  const oAuth = useOAuth();
 
-  return { user, signUp, signIn, signOut };
+  return { user, isLoading, signUp, signIn, signOut, oAuth };
 }
 
 

@@ -1,10 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAppwrite } from "@/components/AppwriteProvider";
 
-type SignInProps = {
-  setAuthenticated: (authenticated: boolean) => void;
-};
-
 type SignInReturnType = {
   isPending: boolean;
   emailPassword: (props: {
@@ -12,11 +8,11 @@ type SignInReturnType = {
     password: string;
     onSuccess?: () => void;
     onError?: (error: Error) => void;
-  }) => Promise<void>;
+  }) => void;
 };
 
-export function useSignIn({ setAuthenticated }: SignInProps): SignInReturnType {
-  const { account } = useAppwrite();
+export function useSignIn(): SignInReturnType {
+  const { account, setAuthenticated } = useAppwrite();
   const queryClient = useQueryClient();
 
   const { mutate: signInWithEmailPassword, isPending } = useMutation({
@@ -42,7 +38,7 @@ export function useSignIn({ setAuthenticated }: SignInProps): SignInReturnType {
 
   return {
     isPending,
-    emailPassword: async ({ email, password, onSuccess, onError }) => {
+    emailPassword: ({ email, password, onSuccess, onError }) => {
       signInWithEmailPassword({ email, password, onSuccess, onError });
     },
   };
