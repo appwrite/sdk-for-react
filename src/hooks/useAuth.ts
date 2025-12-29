@@ -2,7 +2,6 @@ import { useUser } from "./useUser";
 import { useSignIn } from "./useSignIn";
 import { useSignOut } from "./useSignOut";
 import { useSignUp } from "./useSignUp";
-import { useOAuth } from "./useOAuth";
 import { Models } from "appwrite";
 
 type AuthReturnType = {
@@ -12,31 +11,36 @@ type AuthReturnType = {
   isLoading: boolean;
   /** Sign-up methods and state from useSignUp hook */
   signUp: ReturnType<typeof useSignUp>;
-  /** Sign-in methods and state from useSignIn hook */
+  /** Sign-in methods and state from useSignIn hook (includes OAuth) */
   signIn: ReturnType<typeof useSignIn>;
   /** Sign-out methods and state from useSignOut hook */
   signOut: ReturnType<typeof useSignOut>;
-  /** OAuth methods from useOAuth hook */
-  oAuth: ReturnType<typeof useOAuth>;
 }
 
 /**
  * Combined hook for all authentication functionality.
- * Provides access to user data, sign-in, sign-up, sign-out, and OAuth methods.
+ * Provides access to user data, sign-in, sign-up, and sign-out methods.
  *
  * @returns Object containing all auth methods and state
  *
  * @example
  * ```tsx
- * const { user, isLoading, signIn, signOut, signUp, oAuth } = useAuth();
+ * import { useAuth, OAuthProvider } from "@appwrite.io/sdk-for-react";
+ *
+ * const { user, isLoading, signIn, signOut, signUp } = useAuth();
  *
  * if (isLoading) return <Spinner />;
  *
  * if (!user) {
  *   return (
- *     <button onClick={() => signIn.emailPassword({ email, password })}>
- *       Sign In
- *     </button>
+ *     <>
+ *       <button onClick={() => signIn.emailPassword({ email, password })}>
+ *         Sign In
+ *       </button>
+ *       <button onClick={() => signIn.oAuth({ provider: OAuthProvider.Google })}>
+ *         Sign In with Google
+ *       </button>
+ *     </>
  *   );
  * }
  *
@@ -53,9 +57,8 @@ export function useAuth(): AuthReturnType {
   const signUp = useSignUp();
   const signIn = useSignIn();
   const signOut = useSignOut();
-  const oAuth = useOAuth();
 
-  return { user, isLoading, signUp, signIn, signOut, oAuth };
+  return { user, isLoading, signUp, signIn, signOut };
 }
 
 
