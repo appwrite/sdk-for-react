@@ -4,10 +4,28 @@ import { Models } from "appwrite";
 import { useEffect } from "react";
 
 type UserReturnType = {
+  /** The current authenticated user, or undefined if not authenticated */
   user: Models.User<Models.Preferences> | undefined;
+  /** Whether the user data is currently being fetched */
   isLoading: boolean;
 };
 
+/**
+ * Hook for accessing the current authenticated user.
+ * Automatically checks for an existing session on mount and fetches user data.
+ *
+ * @returns Object containing user data and loading state
+ *
+ * @example
+ * ```tsx
+ * const { user, isLoading } = useUser();
+ *
+ * if (isLoading) return <Spinner />;
+ * if (!user) return <LoginPage />;
+ *
+ * return <div>Welcome, {user.name}!</div>;
+ * ```
+ */
 export function useUser(): UserReturnType {
   const { account, authenticated, setAuthenticated } = useAppwrite();
 

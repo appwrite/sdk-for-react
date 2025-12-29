@@ -20,6 +20,33 @@ type OAuthReturnType = {
   }) => void;
 };
 
+/**
+ * Hook for OAuth authentication with third-party providers.
+ * Redirects the user to the OAuth provider's login page.
+ *
+ * @returns Object containing OAuth sign-in method
+ *
+ * @example
+ * ```tsx
+ * import { useOAuth, OAuthProvider } from "@appwrite.io/sdk-for-react";
+ *
+ * const { signIn } = useOAuth();
+ *
+ * // Using OAuthProvider enum
+ * const handleGoogleLogin = () => {
+ *   signIn({
+ *     provider: OAuthProvider.Google,
+ *     successUrl: "/dashboard",
+ *     failureUrl: "/login",
+ *   });
+ * };
+ *
+ * // Using string
+ * const handleGithubLogin = () => {
+ *   signIn({ provider: "github" });
+ * };
+ * ```
+ */
 export function useOAuth(): OAuthReturnType {
   const { account } = useAppwrite();
 
