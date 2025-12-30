@@ -105,7 +105,9 @@ export function useSignIn(): SignInReturnType {
   }) => {
     const oauthProvider = typeof provider === "string" ? (provider as OAuthProvider) : provider;
 
-    account.createOAuth2Token({
+    // Using createOAuth2Session which handles the full OAuth flow automatically
+    // and creates a session without needing to handle callbacks manually
+    account.createOAuth2Session({
       provider: oauthProvider,
       success: successUrl,
       failure: failureUrl,
