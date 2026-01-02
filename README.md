@@ -55,6 +55,8 @@ function SignUpForm() {
     emailPassword({
       email: "user@example.com",
       password: "password123",
+      name: "John Doe", // optional
+      userId: "custom-user-id", // optional, defaults to auto-generated unique ID
       onSuccess: () => console.log("Account created!"),
       onError: (error) => console.error(error),
     });

@@ -10,12 +10,16 @@ type SignUpReturnType = {
    *
    * @param email - User's email address
    * @param password - User's password (min 8 characters)
+   * @param name - Optional user's name
+   * @param userId - Optional custom user ID (defaults to auto-generated unique ID)
    * @param onSuccess - Optional callback fired on successful sign-up and sign-in
    * @param onError - Optional callback fired on sign-up failure
    */
   emailPassword: (props: {
     email: string;
     password: string;
+    name?: string;
+    userId?: string;
     onSuccess?: () => void;
     onError?: (error: Error) => void;
   }) => void;
@@ -35,6 +39,8 @@ type SignUpReturnType = {
  *   emailPassword({
  *     email: "user@example.com",
  *     password: "password123",
+ *     name: "John Doe", // optional
+ *     userId: "custom-user-id", // optional, defaults to auto-generated ID
  *     onSuccess: () => console.log("Account created and signed in!"),
  *     onError: (error) => console.error(error),
  *   });
@@ -46,9 +52,9 @@ export function useSignUp(): SignUpReturnType {
   const queryClient = useQueryClient();
 
   const { mutate: signUpWithEmailPassword, isPending } = useMutation({
-    mutationFn: async ({ email, password }: { email: string; password: string }) => {
+    mutationFn: async ({ email, password, name, userId }: { email: string; password: string; name?: string; userId?: string }) => {
       // Create the user account
-      await account.create({ userId: ID.unique(), email, password });
+      await account.create({ userId: userId ?? ID.unique(), email, password, name });
       // Automatically sign in after signup
       const session = await account.createEmailPasswordSession({ email, password });
       return session;
@@ -62,9 +68,9 @@ export function useSignUp(): SignUpReturnType {
 
   return {
     isPending,
-    emailPassword: ({ email, password, onSuccess, onError }) => {
+    emailPassword: ({ email, password, name, userId, onSuccess, onError }) => {
       signUpWithEmailPassword(
-        { email, password },
+        { email, password, name, userId },
         {
           onSuccess: () => onSuccess?.(),
           onError: (error) => onError?.(error),
