@@ -1,80 +1,64 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { ID, Models } from "appwrite";
 import { useAppwrite } from "@/components/AppwriteProvider";
-import { ID } from "appwrite";
+import { postHandler } from "./internal/handler";
 
 type SignUpReturnType = {
-  /** Whether a sign-up request is currently in progress */
   isPending: boolean;
   /**
-   * Create a new user account with email and password, then automatically sign them in.
+   * Create a new user account with email and password, then sign them in.
    *
-   * @param email - User's email address
-   * @param password - User's password (min 8 characters)
-   * @param name - Optional user's name
-   * @param userId - Optional custom user ID (defaults to auto-generated unique ID)
-   * @param onSuccess - Optional callback fired on successful sign-up and sign-in
-   * @param onError - Optional callback fired on sign-up failure
+   * In SSR mode, the request is POSTed to `{basePath}/sign-up/email-password`
+   * and the handler creates the user, signs them in, and sets the cookie.
+   * In CSR mode, the SDK creates the user and session directly.
    */
   emailPassword: (props: {
     email: string;
     password: string;
     name?: string;
     userId?: string;
-    onSuccess?: () => void;
+    onSuccess?: (user: Models.User<Models.Preferences>) => void;
     onError?: (error: Error) => void;
   }) => void;
 };
 
-/**
- * Hook for creating new user accounts with email/password authentication.
- * Automatically signs in the user after successful account creation.
- *
- * @returns Object containing sign-up methods and state
- *
- * @example
- * ```tsx
- * const { emailPassword, isPending } = useSignUp();
- *
- * const handleRegister = () => {
- *   emailPassword({
- *     email: "user@example.com",
- *     password: "password123",
- *     name: "John Doe", // optional
- *     userId: "custom-user-id", // optional, defaults to auto-generated ID
- *     onSuccess: () => console.log("Account created and signed in!"),
- *     onError: (error) => console.error(error),
- *   });
- * };
- * ```
- */
+type SignUpVariables = { email: string; password: string; name?: string; userId?: string };
+type SignUpResult = { user: Models.User<Models.Preferences> };
+
 export function useSignUp(): SignUpReturnType {
-  const { account, setAuthenticated } = useAppwrite();
+  const { account, setAuthenticated, ssr } = useAppwrite();
   const queryClient = useQueryClient();
 
-  const { mutate: signUpWithEmailPassword, isPending } = useMutation({
-    mutationFn: async ({ email, password, name, userId }: { email: string; password: string; name?: string; userId?: string }) => {
-      // Create the user account
+  const { mutate: signUp, isPending } = useMutation<SignUpResult, Error, SignUpVariables>({
+    mutationFn: async ({ email, password, name, userId }) => {
+      if (ssr.enabled) {
+        return postHandler<SignUpResult>(ssr.basePath, "/sign-up/email-password", {
+          email,
+          password,
+          name,
+          userId,
+        });
+      }
       await account.create({ userId: userId ?? ID.unique(), email, password, name });
-      // Automatically sign in after signup
-      const session = await account.createEmailPasswordSession({ email, password });
-      return session;
+      await account.createEmailPasswordSession({ email, password });
+      const user = await account.get();
+      return { user };
     },
-    onSuccess: (session) => {
+    onSuccess: ({ user }) => {
       setAuthenticated(true);
-      queryClient.setQueryData(["auth", "session"], session);
-      queryClient.invalidateQueries({ queryKey: ["auth", "user"] });
+      queryClient.setQueryData(["auth", "user"], user);
     },
   });
 
   return {
     isPending,
     emailPassword: ({ email, password, name, userId, onSuccess, onError }) => {
-      signUpWithEmailPassword(
+      signUp(
         { email, password, name, userId },
         {
-          onSuccess: () => onSuccess?.(),
+          onSuccess: ({ user }) => onSuccess?.(user),
           onError: (error) => onError?.(error),
-        }
+        },
       );
     },
   };

@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Models, OAuthProvider } from "appwrite";
 import { useAppwrite } from "@/components/AppwriteProvider";
-import { OAuthProvider } from "appwrite";
+import { postHandler } from "./internal/handler";
 
 type SignInReturnType = {
   /** Whether a sign-in request is currently in progress */
@@ -8,25 +9,23 @@ type SignInReturnType = {
   /**
    * Sign in with email and password.
    *
-   * @param email - User's email address
-   * @param password - User's password
-   * @param onSuccess - Optional callback fired on successful sign-in
-   * @param onError - Optional callback fired on sign-in failure
+   * In SSR mode, the credentials are POSTed to the handler at
+   * `{basePath}/sign-in/email-password`. The handler creates the session and
+   * sets the cookie. In CSR mode, the SDK calls Appwrite directly.
    */
   emailPassword: (props: {
     email: string;
     password: string;
-    onSuccess?: () => void;
+    onSuccess?: (user: Models.User<Models.Preferences>) => void;
     onError?: (error: Error) => void;
   }) => void;
   /**
-   * Sign in with OAuth provider. Redirects to the provider's login page.
-   * Also handles account creation if the user doesn't exist.
+   * Sign in with OAuth provider. In SSR mode, the success URL points at the
+   * handler callback so the server can exchange the token for a session and
+   * set the cookie. In CSR mode, the SDK uses createOAuth2Session as before.
    *
-   * @param provider - OAuth provider (e.g., OAuthProvider.Google, OAuthProvider.Github, or string like "google")
-   * @param successUrl - URL to redirect to on success (defaults to current URL)
-   * @param failureUrl - URL to redirect to on failure (defaults to current URL)
-   * @param scopes - Optional array of OAuth scopes
+   * In SSR mode, post-OAuth redirect is controlled by the handler's
+   * `redirects.success` config — `successUrl` is ignored.
    */
   oAuth: (props: {
     provider: OAuthProvider | string;
@@ -36,81 +35,52 @@ type SignInReturnType = {
   }) => void;
 };
 
-/**
- * Hook for signing in users with email/password or OAuth authentication.
- *
- * @returns Object containing sign-in methods and state
- *
- * @example
- * ```tsx
- * import { useSignIn, OAuthProvider } from "@appwrite.io/sdk-for-react";
- *
- * const { emailPassword, oAuth, isPending } = useSignIn();
- *
- * // Email/password sign in
- * const handleLogin = () => {
- *   emailPassword({
- *     email: "user@example.com",
- *     password: "password123",
- *     onSuccess: () => console.log("Signed in!"),
- *     onError: (error) => console.error(error),
- *   });
- * };
- *
- * // OAuth sign in
- * const handleGoogleLogin = () => {
- *   oAuth({
- *     provider: OAuthProvider.Google,
- *     successUrl: "/dashboard",
- *     failureUrl: "/login",
- *   });
- * };
- * ```
- */
+type SignInVariables = { email: string; password: string };
+type SignInResult = { user: Models.User<Models.Preferences> };
+
 export function useSignIn(): SignInReturnType {
-  const { account, setAuthenticated } = useAppwrite();
+  const { account, setAuthenticated, ssr } = useAppwrite();
   const queryClient = useQueryClient();
 
-  const { mutate: signInWithEmailPassword, isPending } = useMutation({
-    mutationFn: ({
-      email,
-      password,
-    }: {
-      email: string;
-      password: string;
-      onSuccess?: () => void;
-      onError?: (error: Error) => void;
-    }) => account.createEmailPasswordSession({ email, password }),
-    onSuccess: (session, { onSuccess }) => {
-      setAuthenticated(true);
-      queryClient.setQueryData(["auth", "session"], session);
-      queryClient.invalidateQueries({ queryKey: ["auth", "user"] });
-      onSuccess?.();
+  const { mutate: signIn, isPending } = useMutation<SignInResult, Error, SignInVariables>({
+    mutationFn: async ({ email, password }) => {
+      if (ssr.enabled) {
+        return postHandler<SignInResult>(ssr.basePath, "/sign-in/email-password", {
+          email,
+          password,
+        });
+      }
+      await account.createEmailPasswordSession({ email, password });
+      const user = await account.get();
+      return { user };
     },
-    onError: (error, { onError }) => {
-      onError?.(error);
+    onSuccess: ({ user }) => {
+      setAuthenticated(true);
+      queryClient.setQueryData(["auth", "user"], user);
     },
   });
 
-  const oAuth = ({
-    provider,
-    successUrl = typeof window !== "undefined" ? window.location.href : undefined,
-    failureUrl = typeof window !== "undefined" ? window.location.href : undefined,
-    scopes,
-  }: {
-    provider: OAuthProvider | string;
-    successUrl?: string;
-    failureUrl?: string;
-    scopes?: string[];
-  }) => {
+  const oAuth: SignInReturnType["oAuth"] = ({ provider, successUrl, failureUrl, scopes }) => {
     const oauthProvider = typeof provider === "string" ? (provider as OAuthProvider) : provider;
 
-    // Using createOAuth2Session which handles the full OAuth flow automatically
-    // and creates a session without needing to handle callbacks manually
+    if (ssr.enabled) {
+      if (typeof window === "undefined") {
+        throw new Error("[appwrite-react] oAuth must be called in the browser");
+      }
+      const origin = window.location.origin;
+      account.createOAuth2Token({
+        provider: oauthProvider,
+        success: `${origin}${ssr.basePath}/oauth/callback`,
+        failure: failureUrl ?? `${origin}${ssr.basePath}/oauth/failure`,
+        scopes,
+      });
+      return;
+    }
+
     account.createOAuth2Session({
       provider: oauthProvider,
-      success: successUrl,
-      failure: failureUrl,
+      success: successUrl ?? (typeof window !== "undefined" ? window.location.href : undefined),
+      failure: failureUrl ?? (typeof window !== "undefined" ? window.location.href : undefined),
       scopes,
     });
   };
@@ -118,7 +88,13 @@ export function useSignIn(): SignInReturnType {
   return {
     isPending,
     emailPassword: ({ email, password, onSuccess, onError }) => {
-      signInWithEmailPassword({ email, password, onSuccess, onError });
+      signIn(
+        { email, password },
+        {
+          onSuccess: ({ user }) => onSuccess?.(user),
+          onError: (error) => onError?.(error),
+        },
+      );
     },
     oAuth,
   };

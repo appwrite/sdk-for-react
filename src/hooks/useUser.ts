@@ -1,58 +1,47 @@
 import { useQuery } from "@tanstack/react-query";
+import { AppwriteException, Models } from "appwrite";
 import { useAppwrite } from "@/components/AppwriteProvider";
-import { Models } from "appwrite";
-import { useEffect } from "react";
 
 type UserReturnType = {
-  /** The current authenticated user, or undefined if not authenticated */
-  user: Models.User<Models.Preferences> | undefined;
+  /** The current authenticated user, or null if not authenticated */
+  user: Models.User<Models.Preferences> | null | undefined;
   /** Whether the user data is currently being fetched */
   isLoading: boolean;
 };
 
 /**
  * Hook for accessing the current authenticated user.
- * Automatically checks for an existing session on mount and fetches user data.
  *
- * @returns Object containing user data and loading state
+ * In SSR mode (provider has `ssr.session`), the client is already authenticated
+ * via setSession; this hook calls `account.get()` directly. There is a brief
+ * loading state on first client paint — that's intentional. Apps that want a
+ * fully server-rendered user can read it from a server component (RSC / loader)
+ * via `getLoggedInUser` and render it there.
  *
- * @example
- * ```tsx
- * const { user, isLoading } = useUser();
- *
- * if (isLoading) return <Spinner />;
- * if (!user) return <LoginPage />;
- *
- * return <div>Welcome, {user.name}!</div>;
- * ```
+ * In CSR mode, this hook fetches the current user; 401 is treated as null.
  */
 export function useUser(): UserReturnType {
-  const { account, authenticated, setAuthenticated } = useAppwrite();
+  const { account, ssr } = useAppwrite();
 
-  // Check for existing session on mount
-  const { data: session, isLoading: isSessionLoading } = useQuery({
-    queryKey: ["auth", "session"],
-    queryFn: () => account.getSession({ sessionId: "current" }),
+  const hasSession = ssr.enabled ? Boolean(ssr.session) : true;
+
+  const { data: user, isLoading } = useQuery<Models.User<Models.Preferences> | null>({
+    queryKey: ["auth", "user"],
+    queryFn: async () => {
+      try {
+        return await account.get();
+      } catch (err) {
+        if (err instanceof AppwriteException && err.code === 401) return null;
+        throw err;
+      }
+    },
+    enabled: hasSession,
     retry: false,
     staleTime: Infinity,
   });
 
-  // Update authenticated state when session is found
-  useEffect(() => {
-    if (session && !authenticated) {
-      setAuthenticated(true);
-    }
-  }, [session, authenticated, setAuthenticated]);
-
-  const { data: user, isLoading: isUserLoading } = useQuery({
-    queryKey: ["auth", "user"],
-    queryFn: () => account.get(),
-    enabled: !!session,
-    retry: false,
-  });
-
   return {
     user,
-    isLoading: isSessionLoading || (!!session && isUserLoading),
+    isLoading: hasSession && isLoading,
   };
 }
