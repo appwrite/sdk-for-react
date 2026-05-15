@@ -1,6 +1,5 @@
 {
   "name": "@appwrite.io/sdk-for-react",
-  "private": true,
   "version": "0.0.1",
   "type": "module",
   "main": "dist/esm/index.js",
@@ -120,9 +119,16 @@
   "files": [
     "dist"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "sideEffects": false,
   "scripts": {
-    "build": "rolldown -c rolldown.config.ts"
+    "clean": "rm -rf dist",
+    "build": "bun run clean && rolldown -c rolldown.config.ts",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "node scripts/publish.mjs"
   },
   "dependencies": {
     "server-only": "^0.0.1"
@@ -148,6 +154,7 @@
     }
   },
   "devDependencies": {
+    "@changesets/cli": "^2.31.0",
     "@eslint/js": "^9.33.0",
     "@microsoft/api-extractor": "^7.55.2",
     "@tanstack/react-query": "^5.87.4",
