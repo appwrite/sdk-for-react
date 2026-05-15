@@ -125,7 +125,6 @@
     "build": "rolldown -c rolldown.config.ts"
   },
   "dependencies": {
-    "node-appwrite": "^24.0.0",
     "server-only": "^0.0.1"
   },
   "peerDependencies": {
@@ -133,11 +132,15 @@
     "@tanstack/react-start": "^1.0.0",
     "appwrite": "^20.0.0 || ^25.0.0",
     "next": ">=15.0.0",
+    "node-appwrite": "^24.0.0",
     "react": "^18.0.0 || ^19.0.0",
     "react-dom": "^18.0.0 || ^19.0.0"
   },
   "peerDependenciesMeta": {
     "next": {
+      "optional": true
+    },
+    "node-appwrite": {
       "optional": true
     },
     "@tanstack/react-start": {
@@ -157,6 +160,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "globals": "^16.3.0",
     "next": "^16.2.4",
+    "node-appwrite": "^24.0.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "rolldown": "^1.0.0-beta.55",
