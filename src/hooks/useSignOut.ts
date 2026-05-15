@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { Client } from "appwrite";
 import { useAppwrite } from "@/components/AppwriteProvider";
 import { postHandler } from "./internal/handler";
 
@@ -35,7 +36,7 @@ export function useSignOut(): SignOutReturnType {
       await account.deleteSession({ sessionId: "current" });
     },
     onSuccess: () => {
-      client.setSession("");
+      clearClientSession(client);
       setAuthenticated(false);
       queryClient.removeQueries({ queryKey: ["auth"] });
     },
@@ -50,4 +51,9 @@ export function useSignOut(): SignOutReturnType {
       });
     },
   };
+}
+
+function clearClientSession(client: Client) {
+  delete client.headers["X-Appwrite-Session"];
+  client.config.session = "";
 }
