@@ -1,5 +1,6 @@
 import "server-only";
 import { createAppwriteHandlers, defineAdapter } from "./index";
+import { readRequestJson } from "../core/body";
 import { parseCookieHeader, serializeClearCookie, serializeCookie } from "../core/cookie";
 import type { AppwriteHandlerConfig } from "../core/types";
 
@@ -10,11 +11,7 @@ export const webAdapter = defineAdapter<[Request], Response>({
       url: new URL(request.url),
       method: request.method,
       getCookie: (name) => cookies.get(name),
-      readJson: async () => {
-        const text = await request.text();
-        if (!text) return null;
-        return JSON.parse(text);
-      },
+      readJson: () => readRequestJson(request),
     };
   },
   respond(init) {

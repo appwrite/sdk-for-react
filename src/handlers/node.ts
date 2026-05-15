@@ -1,20 +1,9 @@
 import "server-only";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { createAppwriteHandlers, defineAdapter } from "./index";
+import { MAX_JSON_BODY_BYTES, PayloadTooLargeError } from "../core/body";
 import { parseCookieHeader, serializeClearCookie, serializeCookie } from "../core/cookie";
 import type { AppwriteHandlerConfig } from "../core/types";
-
-const MAX_NODE_JSON_BODY_BYTES = 1024 * 1024;
-
-class PayloadTooLargeError extends Error {
-  code = 413;
-  type = "general_payload_too_large";
-
-  constructor() {
-    super("Request body too large");
-    this.name = "PayloadTooLargeError";
-  }
-}
 
 export const nodeAdapter = defineAdapter<[IncomingMessage, ServerResponse], void>({
   async toContext(req) {
@@ -83,7 +72,7 @@ function readNodeJson(req: IncomingMessage): Promise<unknown> {
     req.on("data", (chunk: Buffer) => {
       if (settled) return;
       bytes += chunk.byteLength;
-      if (bytes > MAX_NODE_JSON_BODY_BYTES) {
+      if (bytes > MAX_JSON_BODY_BYTES) {
         fail(new PayloadTooLargeError());
         return;
       }

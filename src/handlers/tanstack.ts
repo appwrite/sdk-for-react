@@ -1,6 +1,7 @@
 import "@tanstack/react-start/server-only";
 import { resolveHandlerConfig } from "../core/config";
 import { createHandlerLogic } from "../core/handler";
+import { readRequestJson } from "../core/body";
 import { parseCookieHeader, serializeClearCookie, serializeCookie } from "../core/cookie";
 import type { AdapterResponseInit, AppwriteHandlerConfig } from "../core/types";
 
@@ -45,11 +46,7 @@ export function createAppwriteHandlers(config: AppwriteHandlerConfig) {
       url: new URL(request.url),
       method: request.method,
       getCookie: (name) => cookies.get(name),
-      readJson: async () => {
-        const text = await request.text();
-        if (!text) return null;
-        return JSON.parse(text);
-      },
+      readJson: () => readRequestJson(request),
     });
     return createResponse(init);
   };
