@@ -63,7 +63,12 @@ function oauthCallback(config: ResolvedHandlerConfig): HandlerLogic {
       return redirectTo(config.redirects.failure, 302);
     }
 
-    const session = await buildAdminAccount(config).createSession({ userId, secret });
+    let session;
+    try {
+      session = await buildAdminAccount(config).createSession({ userId, secret });
+    } catch {
+      return redirectTo(config.redirects.failure, 302);
+    }
 
     return {
       status: 302,
