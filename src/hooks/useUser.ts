@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { AppwriteException, Models } from "appwrite";
+import { useEffect } from "react";
 import { useAppwrite } from "@/components/AppwriteProvider";
 
 type UserReturnType = {
@@ -21,7 +22,7 @@ type UserReturnType = {
  * In CSR mode, this hook fetches the current user; 401 is treated as null.
  */
 export function useUser(): UserReturnType {
-  const { account, ssr } = useAppwrite();
+  const { account, setAuthenticated, ssr } = useAppwrite();
 
   const hasSession = ssr.enabled ? Boolean(ssr.session) : true;
 
@@ -39,6 +40,10 @@ export function useUser(): UserReturnType {
     retry: false,
     staleTime: Infinity,
   });
+
+  useEffect(() => {
+    if (user !== undefined) setAuthenticated(Boolean(user));
+  }, [setAuthenticated, user]);
 
   return {
     user,

@@ -36,6 +36,16 @@
         "default": "./dist/cjs/server/next.cjs"
       }
     },
+    "./server/tanstack": {
+      "import": {
+        "types": "./dist/esm/server/tanstack.d.ts",
+        "default": "./dist/esm/server/tanstack.js"
+      },
+      "require": {
+        "types": "./dist/cjs/server/tanstack.d.cts",
+        "default": "./dist/cjs/server/tanstack.cjs"
+      }
+    },
     "./server/web": {
       "import": {
         "types": "./dist/esm/server/web.d.ts",
@@ -76,6 +86,16 @@
         "default": "./dist/cjs/handlers/next.cjs"
       }
     },
+    "./handlers/tanstack": {
+      "import": {
+        "types": "./dist/esm/handlers/tanstack.d.ts",
+        "default": "./dist/esm/handlers/tanstack.js"
+      },
+      "require": {
+        "types": "./dist/cjs/handlers/tanstack.d.cts",
+        "default": "./dist/cjs/handlers/tanstack.cjs"
+      }
+    },
     "./handlers/web": {
       "import": {
         "types": "./dist/esm/handlers/web.d.ts",
@@ -110,6 +130,7 @@
   },
   "peerDependencies": {
     "@tanstack/react-query": "^5.0.0",
+    "@tanstack/react-start": "^1.0.0",
     "appwrite": "^20.0.0 || ^25.0.0",
     "next": ">=15.0.0",
     "react": "^18.0.0 || ^19.0.0",
@@ -118,12 +139,16 @@
   "peerDependenciesMeta": {
     "next": {
       "optional": true
+    },
+    "@tanstack/react-start": {
+      "optional": true
     }
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
     "@microsoft/api-extractor": "^7.55.2",
     "@tanstack/react-query": "^5.87.4",
+    "@tanstack/react-start": "^1.167.65",
     "@types/node": "^25.6.0",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",

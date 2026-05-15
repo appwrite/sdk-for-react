@@ -1,16 +1,7 @@
 import { AppwriteException, ID } from "appwrite";
 import { Account as NodeAccount, Client as NodeClient } from "node-appwrite";
 import { buildSessionClient } from "./client";
-
-/**
- * Strip non-plain shapes from web-SDK responses so handler payloads cross the
- * wire / RSC boundary cleanly. See core/server.ts:toPlain for the full why.
- */
-function toPlain<T>(value: T): T {
-  return JSON.parse(
-    JSON.stringify(value, (_k, v) => (typeof v === "bigint" ? v.toString() : v)),
-  );
-}
+import { toPlain } from "./utils";
 import type {
   AdapterRequestContext,
   AdapterResponseInit,
