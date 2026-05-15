@@ -5,8 +5,8 @@ import { useSignUp } from "./useSignUp";
 import { Models } from "appwrite";
 
 type AuthReturnType = {
-  /** The current authenticated user, or undefined if not authenticated */
-  user: Models.User<Models.Preferences> | undefined;
+  /** The current authenticated user, or null/undefined if not authenticated */
+  user: Models.User<Models.Preferences> | null | undefined;
   /** Whether the authentication state is currently being determined */
   isLoading: boolean;
   /** Sign-up methods and state from useSignUp hook */

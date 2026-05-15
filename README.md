@@ -2,185 +2,400 @@
 
 [![Discord](https://img.shields.io/discord/564160730845151244?label=discord&style=flat-square)](https://appwrite.io/discord)
 
-Appwrite is an open-source backend as a service server that abstracts and simplifies complex and repetitive development tasks behind a very simple to use REST API. The Appwrite React SDK provides a set of React hooks that make it easy to interact with Appwrite services in your React applications.
+Appwrite is an open-source backend as a service that abstracts common application features behind simple APIs. The Appwrite React SDK provides React hooks and framework adapters for Appwrite authentication in client-rendered and server-rendered React apps.
 
 ![Appwrite](https://github.com/appwrite/appwrite/raw/main/public/images/github.png)
 
+## Features
+
+- React provider and hooks for sign-up, sign-in, sign-out, OAuth, and current user state
+- Client-side auth for Vite and other non-SSR React apps
+- SSR auth handlers for Next.js and TanStack Start
+- Server helpers for reading the current user/session from HTTP-only cookies
+- Server-context session clients and admin clients
+
 ## Installation
 
-```bash
-npm install @appwrite.io/sdk-for-react
+For client-rendered React apps:
+
+```sh
+pnpm add @appwrite.io/sdk-for-react appwrite @tanstack/react-query
 ```
 
-## Getting Started
+For SSR apps that use the server handlers or admin client, also install `node-appwrite`:
 
-### Add your Web Platform
+```sh
+pnpm add @appwrite.io/sdk-for-react appwrite node-appwrite @tanstack/react-query
+```
 
-To init your SDK and interact with Appwrite services, you need to add a web platform to your project. To add a new platform, go to your Appwrite console, choose the project you created in the step before and click the 'Add Platform' button.
+Framework packages such as `next`, `@tanstack/react-start`, `react`, and `react-dom` should come from your app scaffold.
 
-From the options, choose to add a **Web** platform and add your client app hostname. By adding your hostname to your project platform, you are allowing cross-origin communication between your project and the Appwrite API, preventing CORS errors.
+## Non-SSR React Apps
 
-### Setup the Provider
-
-Wrap your application with the `AppwriteProvider` component. This provides the Appwrite client context to all child components.
+Use this setup for Vite or any app where auth is handled directly in the browser.
 
 ```tsx
 import { AppwriteProvider } from "@appwrite.io/sdk-for-react";
 
-function App() {
+export function Root() {
   return (
     <AppwriteProvider
-      endpoint="https://cloud.appwrite.io/v1"
-      projectId="your-project-id"
+      endpoint={import.meta.env.VITE_APPWRITE_ENDPOINT}
+      projectId={import.meta.env.VITE_APPWRITE_PROJECT_ID}
     >
-      <YourApp />
+      <App />
     </AppwriteProvider>
   );
 }
 ```
 
-### Authentication
-
-The SDK provides hooks for user authentication including sign-up, sign-in, sign-out, and OAuth.
-
-#### Sign Up
+Then, for authentication:
 
 ```tsx
-import { useSignUp } from "@appwrite.io/sdk-for-react";
+import { useAuth } from "@appwrite.io/sdk-for-react";
 
-function SignUpForm() {
-  const { emailPassword, isPending } = useSignUp();
-
-  const handleSignUp = () => {
-    emailPassword({
-      email: "user@example.com",
-      password: "password123",
-      name: "John Doe", // optional
-      userId: "custom-user-id", // optional, defaults to auto-generated unique ID
-      onSuccess: () => console.log("Account created!"),
-      onError: (error) => console.error(error),
-    });
-  };
-
-  return (
-    <button onClick={handleSignUp} disabled={isPending}>
-      {isPending ? "Creating account..." : "Sign Up"}
-    </button>
-  );
-}
-```
-
-#### Sign In
-
-```tsx
-import { useSignIn, OAuthProvider } from "@appwrite.io/sdk-for-react";
-
-function SignInForm() {
-  const { emailPassword, oAuth, isPending } = useSignIn();
-
-  // Email/password sign in
-  const handleEmailSignIn = () => {
-    emailPassword({
-      email: "user@example.com",
-      password: "password123",
-      onSuccess: () => console.log("Signed in!"),
-      onError: (error) => console.error(error),
-    });
-  };
-
-  // OAuth sign in
-  const handleGoogleSignIn = () => {
-    oAuth({
-      provider: OAuthProvider.Google,
-      successUrl: window.location.origin + "/dashboard",
-      failureUrl: window.location.origin + "/login",
-    });
-  };
-
-  return (
-    <div>
-      <button onClick={handleEmailSignIn} disabled={isPending}>
-        Sign In with Email
-      </button>
-      <button onClick={handleGoogleSignIn}>
-        Sign In with Google
-      </button>
-    </div>
-  );
-}
-```
-
-#### Sign Out
-
-```tsx
-import { useSignOut } from "@appwrite.io/sdk-for-react";
-
-function SignOutButton() {
-  const { signOut, isPending } = useSignOut();
-
-  return (
-    <button onClick={() => signOut()} disabled={isPending}>
-      {isPending ? "Signing out..." : "Sign Out"}
-    </button>
-  );
-}
-```
-
-#### Get Current User
-
-```tsx
-import { useUser } from "@appwrite.io/sdk-for-react";
-
-function Profile() {
-  const { user, isLoading } = useUser();
-
-  if (isLoading) return <div>Loading...</div>;
-  if (!user) return <div>Not signed in</div>;
-
-  return <div>Welcome, {user.name}!</div>;
-}
-```
-
-### Combined Auth Hook
-
-For convenience, you can use the `useAuth` hook which combines all authentication functionality:
-
-```tsx
-import { useAuth, OAuthProvider } from "@appwrite.io/sdk-for-react";
-
-function AuthExample() {
+export function AuthPanel() {
   const { user, isLoading, signIn, signUp, signOut } = useAuth();
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) return <p>Loading...</p>;
 
   if (!user) {
     return (
-      <div>
-        <button onClick={() => signIn.emailPassword({ email, password })}>
-          Sign In
+      <>
+        <button
+          onClick={() =>
+            signIn.emailPassword({
+              email: "user@example.com",
+              password: "password123",
+            })
+          }
+        >
+          Sign in
         </button>
-        <button onClick={() => signIn.oAuth({ provider: OAuthProvider.Github })}>
-          Sign In with GitHub
+        <button
+          onClick={() =>
+            signUp.emailPassword({
+              email: "user@example.com",
+              password: "password123",
+              name: "Jane Doe",
+            })
+          }
+        >
+          Sign up
         </button>
-        <button onClick={() => signUp.emailPassword({ email, password })}>
-          Sign Up
-        </button>
-      </div>
+      </>
     );
   }
 
   return (
-    <div>
-      <p>Welcome, {user.name}!</p>
-      <button onClick={() => signOut.signOut()}>Sign Out</button>
-    </div>
+    <>
+      <p>Signed in as {user.email}</p>
+      <button onClick={() => signOut.signOut()}>Sign out</button>
+    </>
   );
 }
 ```
 
-## Learn More
+## Next.js App Router SSR
 
-You can use the following resources to learn more and get help:
+Set public Appwrite values and keep only the API key private:
+
+```env
+NEXT_PUBLIC_APPWRITE_ENDPOINT=https://fra.cloud.appwrite.io/v1
+NEXT_PUBLIC_APPWRITE_PROJECT_ID=PROJECT_ID
+APPWRITE_API_KEY=SERVER_ONLY_API_KEY
+```
+
+Create the Appwrite auth handler route:
+
+```ts
+// app/api/appwrite/[...appwrite]/route.ts
+import { createAppwriteHandlers } from "@appwrite.io/sdk-for-react/handlers/next";
+
+export const { GET, POST } = createAppwriteHandlers({
+  endpoint: process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!,
+  projectId: process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID!,
+  apiKey: process.env.APPWRITE_API_KEY!,
+  basePath: "/api/appwrite",
+});
+```
+
+Pass the server session into the client provider:
+
+```tsx
+// app/providers.tsx
+"use client";
+
+import { AppwriteProvider } from "@appwrite.io/sdk-for-react";
+
+export function Providers({
+  session,
+  children,
+}: {
+  session?: string | null;
+  children: React.ReactNode;
+}) {
+  return (
+    <AppwriteProvider
+      endpoint={process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!}
+      projectId={process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID!}
+      ssr={{ session, basePath: "/api/appwrite" }}
+    >
+      {children}
+    </AppwriteProvider>
+  );
+}
+```
+
+```tsx
+// app/layout.tsx
+import { readSessionCookie } from "@appwrite.io/sdk-for-react/server/next";
+import { Providers } from "./providers";
+
+export default async function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const session = await readSessionCookie();
+
+  return (
+    <html lang="en">
+      <body>
+        <Providers session={session}>{children}</Providers>
+      </body>
+    </html>
+  );
+}
+```
+
+Read SSR auth state and create server-context clients:
+
+```tsx
+// app/page.tsx
+import { createAdminClient } from "@appwrite.io/sdk-for-react/server";
+import { createNextServerHelpers } from "@appwrite.io/sdk-for-react/server/next";
+
+const appwrite = {
+  endpoint: process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!,
+  projectId: process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID!,
+};
+
+export default async function Page() {
+  const helpers = createNextServerHelpers(appwrite);
+
+  const user = await helpers.getLoggedInUser();
+  const sessionClient = await helpers.createSessionClient();
+
+  const adminClient = createAdminClient({
+    ...appwrite,
+    apiKey: process.env.APPWRITE_API_KEY!,
+  });
+
+  return (
+    <main>
+      <p>SSR user: {user?.email ?? "signed out"}</p>
+      <p>Session client: {sessionClient ? "available" : "none"}</p>
+      <p>Admin client: {adminClient.client ? "available" : "none"}</p>
+    </main>
+  );
+}
+```
+
+In client components, use the same hooks. Refresh the router after auth mutations when server-rendered state should update.
+
+```tsx
+// app/auth-panel.tsx
+"use client";
+
+import { useAuth } from "@appwrite.io/sdk-for-react";
+import { useRouter } from "next/navigation";
+
+export function AuthPanel() {
+  const { user, isLoading, signIn, signOut } = useAuth();
+  const router = useRouter();
+
+  if (isLoading) return <p>Loading...</p>;
+
+  if (!user) {
+    return (
+      <button
+        onClick={() =>
+          signIn.emailPassword({
+            email: "user@example.com",
+            password: "password123",
+            onSuccess: () => router.refresh(),
+          })
+        }
+      >
+        Sign in
+      </button>
+    );
+  }
+
+  return (
+    <button
+      onClick={() => signOut.signOut({ onSuccess: () => router.refresh() })}
+    >
+      Sign out
+    </button>
+  );
+}
+```
+
+## TanStack Start SSR
+
+Set public Appwrite values and keep only the API key private:
+
+```env
+VITE_APPWRITE_ENDPOINT=https://fra.cloud.appwrite.io/v1
+VITE_APPWRITE_PROJECT_ID=PROJECT_ID
+APPWRITE_API_KEY=SERVER_ONLY_API_KEY
+```
+
+Create the Appwrite auth handler route:
+
+```ts
+// src/routes/api/appwrite/$.ts
+import { createFileRoute } from "@tanstack/react-router";
+import { createAppwriteHandlers } from "@appwrite.io/sdk-for-react/handlers/tanstack";
+
+export const Route = createFileRoute("/api/appwrite/$")({
+  server: {
+    handlers: createAppwriteHandlers({
+      endpoint: import.meta.env.VITE_APPWRITE_ENDPOINT,
+      projectId: import.meta.env.VITE_APPWRITE_PROJECT_ID,
+      apiKey: process.env.APPWRITE_API_KEY!,
+      basePath: "/api/appwrite",
+    }),
+  },
+});
+```
+
+Read SSR auth state in a server function and pass the session into the provider:
+
+```tsx
+// src/routes/index.tsx
+import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createServerFn } from "@tanstack/react-start";
+import { AppwriteProvider, useAuth } from "@appwrite.io/sdk-for-react";
+import {
+  createAdminClient,
+  createTanStackServerHelpers,
+} from "@appwrite.io/sdk-for-react/server/tanstack";
+
+const getAuthSnapshot = createServerFn({ method: "GET" }).handler(async () => {
+  const appwrite = {
+    endpoint: import.meta.env.VITE_APPWRITE_ENDPOINT,
+    projectId: import.meta.env.VITE_APPWRITE_PROJECT_ID,
+  };
+
+  const helpers = createTanStackServerHelpers(appwrite);
+  const user = await helpers.getLoggedInUser();
+  const sessionClient = await helpers.createSessionClient();
+  const adminClient = createAdminClient({
+    ...appwrite,
+    apiKey: process.env.APPWRITE_API_KEY!,
+  });
+
+  return {
+    session: helpers.readSessionCookie() ?? null,
+    user,
+    hasSessionClient: Boolean(sessionClient),
+    hasAdminClient: Boolean(adminClient.client),
+  };
+});
+
+export const Route = createFileRoute("/")({
+  loader: () => getAuthSnapshot(),
+  component: Page,
+});
+
+function Page() {
+  const { session, user, hasSessionClient, hasAdminClient } =
+    Route.useLoaderData();
+
+  return (
+    <AppwriteProvider
+      endpoint={import.meta.env.VITE_APPWRITE_ENDPOINT}
+      projectId={import.meta.env.VITE_APPWRITE_PROJECT_ID}
+      ssr={{ session, basePath: "/api/appwrite" }}
+    >
+      <main>
+        <p>SSR user: {user?.email ?? "signed out"}</p>
+        <p>Session client: {hasSessionClient ? "available" : "none"}</p>
+        <p>Admin client: {hasAdminClient ? "available" : "none"}</p>
+        <AuthPanel />
+      </main>
+    </AppwriteProvider>
+  );
+}
+
+function AuthPanel() {
+  const { user, isLoading, signIn, signOut } = useAuth();
+  const router = useRouter();
+
+  if (isLoading) return <p>Loading...</p>;
+
+  if (!user) {
+    return (
+      <button
+        onClick={() =>
+          signIn.emailPassword({
+            email: "user@example.com",
+            password: "password123",
+            onSuccess: () => router.invalidate(),
+          })
+        }
+      >
+        Sign in
+      </button>
+    );
+  }
+
+  return (
+    <button
+      onClick={() => signOut.signOut({ onSuccess: () => router.invalidate() })}
+    >
+      Sign out
+    </button>
+  );
+}
+```
+
+## API Overview
+
+Client entrypoint:
+
+```ts
+import {
+  AppwriteProvider,
+  OAuthProvider,
+  useAuth,
+  useSignIn,
+  useSignOut,
+  useSignUp,
+  useUser,
+} from "@appwrite.io/sdk-for-react";
+```
+
+Server entrypoints:
+
+```ts
+import { createAppwriteHandlers as createNextAppwriteHandlers } from "@appwrite.io/sdk-for-react/handlers/next";
+import { createAppwriteHandlers as createTanStackAppwriteHandlers } from "@appwrite.io/sdk-for-react/handlers/tanstack";
+
+import {
+  createAdminClient,
+  createSessionClient,
+} from "@appwrite.io/sdk-for-react/server";
+import { createNextServerHelpers } from "@appwrite.io/sdk-for-react/server/next";
+import { createTanStackServerHelpers } from "@appwrite.io/sdk-for-react/server/tanstack";
+```
+
+Do not import server entrypoints from client components or browser-only code.
+
+## Learn More
 
 - [Appwrite Docs](https://appwrite.io/docs)
 - [Discord Community](https://appwrite.io/discord)
