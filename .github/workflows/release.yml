@@ -47,5 +47,6 @@ jobs:
         with:
           version: bun run version
           publish: bun run release
+          createGithubReleases: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
