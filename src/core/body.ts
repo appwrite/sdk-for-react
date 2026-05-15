@@ -10,6 +10,16 @@ export class PayloadTooLargeError extends Error {
   }
 }
 
+export class InvalidJsonBodyError extends Error {
+  code = 400;
+  type = "general_argument_invalid";
+
+  constructor() {
+    super("Invalid JSON body");
+    this.name = "InvalidJsonBodyError";
+  }
+}
+
 export async function readRequestJson(request: Request): Promise<unknown> {
   const contentLength = request.headers.get("content-length");
   if (contentLength) {
@@ -51,5 +61,10 @@ export async function readRequestJson(request: Request): Promise<unknown> {
     offset += chunk.byteLength;
   }
 
-  return JSON.parse(new TextDecoder().decode(body));
+  try {
+    return JSON.parse(new TextDecoder().decode(body));
+  } catch (err) {
+    if (err instanceof SyntaxError) throw new InvalidJsonBodyError();
+    throw err;
+  }
 }
