@@ -1,7 +1,7 @@
 import "server-only";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { createAppwriteHandlers, defineAdapter } from "./index";
-import { MAX_JSON_BODY_BYTES, PayloadTooLargeError } from "../core/body";
+import { InvalidJsonBodyError, MAX_JSON_BODY_BYTES, PayloadTooLargeError } from "../core/body";
 import { parseCookieHeader, serializeClearCookie, serializeCookie } from "../core/cookie";
 import type { AppwriteHandlerConfig } from "../core/types";
 
@@ -91,7 +91,7 @@ function readNodeJson(req: IncomingMessage): Promise<unknown> {
       try {
         resolve(JSON.parse(text));
       } catch (err) {
-        reject(err);
+        reject(err instanceof SyntaxError ? new InvalidJsonBodyError() : err);
       }
     });
   });
