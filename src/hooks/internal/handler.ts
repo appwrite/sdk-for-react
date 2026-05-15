@@ -1,3 +1,5 @@
+import { AppwriteException } from "appwrite";
+
 export async function postHandler<T>(basePath: string, route: string, body: unknown): Promise<T> {
   const res = await fetch(`${basePath}${route}`, {
     method: "POST",
@@ -17,12 +19,25 @@ export async function postHandler<T>(basePath: string, route: string, body: unkn
   }
 
   if (!res.ok) {
-    const message =
-      payload && typeof payload === "object" && "error" in payload && typeof (payload as { error: unknown }).error === "string"
-        ? (payload as { error: string }).error
-        : `Request failed with status ${res.status}`;
-    throw new Error(message);
+    const error = readErrorPayload(payload);
+    throw new AppwriteException(
+      error.message ?? `Request failed with status ${res.status}`,
+      res.status,
+      error.type,
+    );
   }
 
   return payload as T;
+}
+
+function readErrorPayload(payload: unknown): { message?: string; type?: string } {
+  if (!payload || typeof payload !== "object") return {};
+
+  const error = "error" in payload ? payload.error : undefined;
+  const type = "type" in payload ? payload.type : undefined;
+
+  return {
+    message: typeof error === "string" ? error : undefined,
+    type: typeof type === "string" ? type : undefined,
+  };
 }
