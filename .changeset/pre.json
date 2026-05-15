@@ -4,5 +4,7 @@
   "initialVersions": {
     "@appwrite.io/sdk-for-react": "0.0.1"
   },
-  "changesets": []
+  "changesets": [
+    "red-areas-send"
+  ]
 }
