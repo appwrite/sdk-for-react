@@ -58,13 +58,15 @@ export function AppwriteProvider({
     return { client: c, account: new Account(c) };
   }, [endpoint, projectId, ssr?.session]);
 
+  const ssrEnabled = ssr !== undefined;
+
   const ssrConfig = useMemo(
     () => ({
-      enabled: ssr !== undefined,
+      enabled: ssrEnabled,
       basePath: ssr?.basePath ?? DEFAULT_BASE_PATH,
       session: ssr?.session ?? null,
     }),
-    [ssr?.basePath, ssr?.session],
+    [ssrEnabled, ssr?.basePath, ssr?.session],
   );
 
   const contextValue = useMemo<AppwriteContextValue>(
