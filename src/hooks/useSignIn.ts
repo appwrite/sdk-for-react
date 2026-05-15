@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Models, OAuthProvider } from "appwrite";
 import { useAppwrite } from "@/components/AppwriteProvider";
+import { OAUTH_STATE_COOKIE_NAME, OAUTH_STATE_MAX_AGE_SECONDS } from "../core/config";
 import { postHandler } from "./internal/handler";
 
 type SignInReturnType = {
@@ -81,11 +82,25 @@ export function useSignIn(): SignInReturnType {
         throw error;
       }
       const origin = window.location.origin;
+      let success: URL;
+      try {
+        const state = createOAuthState();
+        success = new URL(`${origin}${ssr.basePath}/oauth/callback`);
+        success.searchParams.set("state", state);
+        setOAuthStateCookie(ssr.basePath, state);
+      } catch (err) {
+        if (onError) {
+          onError(toError(err));
+          return;
+        }
+        throw err;
+      }
+
       startOAuth(
         () =>
           account.createOAuth2Token({
             provider: oauthProvider,
-            success: `${origin}${ssr.basePath}/oauth/callback`,
+            success: success.toString(),
             failure: failureUrl ?? `${origin}${ssr.basePath}/oauth/failure`,
             scopes,
           }),
@@ -133,4 +148,24 @@ function startOAuth(createResult: () => unknown, onError?: (error: Error) => voi
 
 function toError(err: unknown): Error {
   return err instanceof Error ? err : new Error(String(err));
+}
+
+function createOAuthState(): string {
+  const crypto = globalThis.crypto;
+  if (!crypto) {
+    throw new Error("[appwrite-react] crypto is required for OAuth state generation");
+  }
+  if (typeof crypto.randomUUID === "function") return crypto.randomUUID();
+
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+function setOAuthStateCookie(basePath: string, state: string) {
+  const path = basePath.replace(/\/+$/, "") || "/";
+  const secure = window.location.protocol === "https:" ? "; Secure" : "";
+  document.cookie = `${encodeURIComponent(OAUTH_STATE_COOKIE_NAME)}=${encodeURIComponent(
+    state,
+  )}; Path=${path}; Max-Age=${OAUTH_STATE_MAX_AGE_SECONDS}; SameSite=Lax${secure}`;
 }

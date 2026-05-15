@@ -6,6 +6,8 @@ import type {
 } from "./types";
 
 export const DEFAULT_COOKIE_NAME = "appwrite-session";
+export const OAUTH_STATE_COOKIE_NAME = "appwrite-oauth-state";
+export const OAUTH_STATE_MAX_AGE_SECONDS = 10 * 60;
 export const DEFAULT_BASE_PATH = "/api/appwrite";
 
 export function resolveHandlerConfig(config: AppwriteHandlerConfig): ResolvedHandlerConfig {

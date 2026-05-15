@@ -1,6 +1,7 @@
 import { AppwriteException, ID } from "appwrite";
 import { Account as NodeAccount, Client as NodeClient } from "node-appwrite";
 import { buildSessionClient } from "./client";
+import { OAUTH_STATE_COOKIE_NAME } from "./config";
 import { toPlain } from "./utils";
 import type {
   AdapterRequestContext,
@@ -59,15 +60,15 @@ function oauthCallback(config: ResolvedHandlerConfig): HandlerLogic {
   return async (ctx) => {
     const userId = ctx.url.searchParams.get("userId");
     const secret = ctx.url.searchParams.get("secret");
-    if (!userId || !secret) {
-      return redirectTo(config.redirects.failure, 302);
+    if (!userId || !secret || !isValidOAuthState(ctx)) {
+      return redirectToOAuthFailure(config);
     }
 
     let session;
     try {
       session = await buildAdminAccount(config).createSession({ userId, secret });
     } catch {
-      return redirectTo(config.redirects.failure, 302);
+      return redirectToOAuthFailure(config);
     }
 
     return {
@@ -76,13 +77,13 @@ function oauthCallback(config: ResolvedHandlerConfig): HandlerLogic {
       setCookies: [
         { name: config.cookieName, value: session.secret, options: cookieWriteOptions(config) },
       ],
-      clearCookies: [],
+      clearCookies: [{ name: OAUTH_STATE_COOKIE_NAME, options: oauthStateCookieClearOptions(config) }],
     };
   };
 }
 
 function oauthFailure(config: ResolvedHandlerConfig): HandlerLogic {
-  return async () => redirectTo(config.redirects.failure, 302);
+  return async () => redirectToOAuthFailure(config);
 }
 
 function signInEmailPassword(config: ResolvedHandlerConfig): HandlerLogic {
@@ -162,6 +163,29 @@ function cookieClearOptions(config: ResolvedHandlerConfig) {
 
 function redirectTo(url: string, status: number): AdapterResponseInit {
   return { status, redirect: url, setCookies: [], clearCookies: [] };
+}
+
+function redirectToOAuthFailure(config: ResolvedHandlerConfig): AdapterResponseInit {
+  return {
+    status: 302,
+    redirect: config.redirects.failure,
+    setCookies: [],
+    clearCookies: [{ name: OAUTH_STATE_COOKIE_NAME, options: oauthStateCookieClearOptions(config) }],
+  };
+}
+
+function isValidOAuthState(ctx: AdapterRequestContext): boolean {
+  const state = ctx.url.searchParams.get("state");
+  const cookieState = ctx.getCookie(OAUTH_STATE_COOKIE_NAME);
+  return Boolean(state && cookieState && state === cookieState);
+}
+
+function oauthStateCookieClearOptions(config: ResolvedHandlerConfig) {
+  return {
+    path: config.basePath,
+    secure: config.cookieOptions.secure,
+    sameSite: "lax" as const,
+  };
 }
 
 function notFound(): AdapterResponseInit {
