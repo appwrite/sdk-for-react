@@ -42,8 +42,12 @@ export function useUser(): UserReturnType {
   });
 
   useEffect(() => {
+    if (!hasSession) {
+      setAuthenticated(false);
+      return;
+    }
     if (user !== undefined) setAuthenticated(Boolean(user));
-  }, [setAuthenticated, user]);
+  }, [hasSession, setAuthenticated, user]);
 
   return {
     user,
