@@ -26,12 +26,14 @@ type SignInReturnType = {
    *
    * In SSR mode, post-OAuth redirect is controlled by the handler's
    * `redirects.success` config — `successUrl` is ignored.
+   * If the OAuth request fails before redirect, `onError` is called.
    */
   oAuth: (props: {
     provider: OAuthProvider | string;
     successUrl?: string;
     failureUrl?: string;
     scopes?: string[];
+    onError?: (error: Error) => void;
   }) => void;
 };
 
@@ -60,29 +62,48 @@ export function useSignIn(): SignInReturnType {
     },
   });
 
-  const oAuth: SignInReturnType["oAuth"] = ({ provider, successUrl, failureUrl, scopes }) => {
+  const oAuth: SignInReturnType["oAuth"] = ({
+    provider,
+    successUrl,
+    failureUrl,
+    scopes,
+    onError,
+  }) => {
     const oauthProvider = typeof provider === "string" ? (provider as OAuthProvider) : provider;
 
     if (ssr.enabled) {
       if (typeof window === "undefined") {
-        throw new Error("[appwrite-react] oAuth must be called in the browser");
+        const error = new Error("[appwrite-react] oAuth must be called in the browser");
+        if (onError) {
+          onError(error);
+          return;
+        }
+        throw error;
       }
       const origin = window.location.origin;
-      account.createOAuth2Token({
-        provider: oauthProvider,
-        success: `${origin}${ssr.basePath}/oauth/callback`,
-        failure: failureUrl ?? `${origin}${ssr.basePath}/oauth/failure`,
-        scopes,
-      });
+      startOAuth(
+        () =>
+          account.createOAuth2Token({
+            provider: oauthProvider,
+            success: `${origin}${ssr.basePath}/oauth/callback`,
+            failure: failureUrl ?? `${origin}${ssr.basePath}/oauth/failure`,
+            scopes,
+          }),
+        onError,
+      );
       return;
     }
 
-    account.createOAuth2Session({
-      provider: oauthProvider,
-      success: successUrl ?? (typeof window !== "undefined" ? window.location.href : undefined),
-      failure: failureUrl ?? (typeof window !== "undefined" ? window.location.href : undefined),
-      scopes,
-    });
+    startOAuth(
+      () =>
+        account.createOAuth2Session({
+          provider: oauthProvider,
+          success: successUrl ?? (typeof window !== "undefined" ? window.location.href : undefined),
+          failure: failureUrl ?? (typeof window !== "undefined" ? window.location.href : undefined),
+          scopes,
+        }),
+      onError,
+    );
   };
 
   return {
@@ -98,4 +119,18 @@ export function useSignIn(): SignInReturnType {
     },
     oAuth,
   };
+}
+
+function startOAuth(createResult: () => unknown, onError?: (error: Error) => void) {
+  try {
+    Promise.resolve(createResult()).catch((err) => {
+      onError?.(toError(err));
+    });
+  } catch (err) {
+    onError?.(toError(err));
+  }
+}
+
+function toError(err: unknown): Error {
+  return err instanceof Error ? err : new Error(String(err));
 }
