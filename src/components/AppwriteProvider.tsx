@@ -64,7 +64,7 @@ export function AppwriteProvider({
       basePath: ssr?.basePath ?? DEFAULT_BASE_PATH,
       session: ssr?.session ?? null,
     }),
-    [ssr],
+    [ssr?.basePath, ssr?.session],
   );
 
   const contextValue = useMemo<AppwriteContextValue>(
