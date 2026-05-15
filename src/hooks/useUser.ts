@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { AppwriteException, Models } from "appwrite";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useAppwrite } from "@/components/AppwriteProvider";
 
 type UserReturnType = {
@@ -25,6 +25,7 @@ export function useUser(): UserReturnType {
   const { account, setAuthenticated, ssr } = useAppwrite();
 
   const hasSession = ssr.enabled ? Boolean(ssr.session) : true;
+  const hadServerSession = useRef(hasSession);
 
   const { data: user, isLoading } = useQuery<Models.User<Models.Preferences> | null>({
     queryKey: ["auth", "user"],
@@ -42,7 +43,10 @@ export function useUser(): UserReturnType {
   });
 
   useEffect(() => {
-    if (!hasSession) {
+    if (hasSession) {
+      hadServerSession.current = true;
+    } else if (hadServerSession.current) {
+      hadServerSession.current = false;
       setAuthenticated(false);
       return;
     }
