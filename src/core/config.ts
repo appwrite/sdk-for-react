@@ -36,7 +36,6 @@ export function resolveConfig(config: AppwriteSsrConfig): ResolvedSsrConfig {
     redirects: {
       success: config.redirects?.success ?? "/",
       failure: config.redirects?.failure ?? "/",
-      signOut: config.redirects?.signOut ?? config.redirects?.success ?? "/",
     },
   };
 }

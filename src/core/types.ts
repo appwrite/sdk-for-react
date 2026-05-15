@@ -21,7 +21,6 @@ export interface AppwriteSsrConfig {
   redirects?: {
     success?: string;
     failure?: string;
-    signOut?: string;
   };
 }
 
@@ -50,7 +49,6 @@ export interface ResolvedSsrConfig {
   redirects: {
     success: string;
     failure: string;
-    signOut: string;
   };
 }
 

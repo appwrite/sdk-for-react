@@ -4,6 +4,18 @@ import { createAppwriteHandlers, defineAdapter } from "./index";
 import { parseCookieHeader, serializeClearCookie, serializeCookie } from "../core/cookie";
 import type { AppwriteHandlerConfig } from "../core/types";
 
+const MAX_NODE_JSON_BODY_BYTES = 1024 * 1024;
+
+class PayloadTooLargeError extends Error {
+  code = 413;
+  type = "general_payload_too_large";
+
+  constructor() {
+    super("Request body too large");
+    this.name = "PayloadTooLargeError";
+  }
+}
+
 export const nodeAdapter = defineAdapter<[IncomingMessage, ServerResponse], void>({
   async toContext(req) {
     const cookies = parseCookieHeader(req.headers.cookie);
@@ -58,9 +70,33 @@ export const nodeAdapter = defineAdapter<[IncomingMessage, ServerResponse], void
 function readNodeJson(req: IncomingMessage): Promise<unknown> {
   return new Promise((resolve, reject) => {
     const chunks: Buffer[] = [];
-    req.on("data", (chunk: Buffer) => chunks.push(chunk));
-    req.on("error", reject);
+    let bytes = 0;
+    let settled = false;
+
+    const fail = (err: unknown) => {
+      if (settled) return;
+      settled = true;
+      req.destroy();
+      reject(err);
+    };
+
+    req.on("data", (chunk: Buffer) => {
+      if (settled) return;
+      bytes += chunk.byteLength;
+      if (bytes > MAX_NODE_JSON_BODY_BYTES) {
+        fail(new PayloadTooLargeError());
+        return;
+      }
+      chunks.push(chunk);
+    });
+    req.on("error", (err) => {
+      if (settled) return;
+      settled = true;
+      reject(err);
+    });
     req.on("end", () => {
+      if (settled) return;
+      settled = true;
       const text = Buffer.concat(chunks).toString("utf8");
       if (!text) return resolve(null);
       try {
