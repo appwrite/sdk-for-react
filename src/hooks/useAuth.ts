@@ -25,7 +25,7 @@ type AuthReturnType = {
  *
  * @example
  * ```tsx
- * import { useAuth, OAuthProvider } from "@appwrite.io/sdk-for-react";
+ * import { useAuth, OAuthProvider } from "@appwrite.io/react";
  *
  * const { user, isLoading, signIn, signOut, signUp } = useAuth();
  *

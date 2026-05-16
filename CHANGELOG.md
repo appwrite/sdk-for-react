@@ -1,4 +1,4 @@
-# @appwrite.io/sdk-for-react
+# @appwrite.io/react
 
 ## 0.1.0-rc.0
 

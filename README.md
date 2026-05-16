@@ -19,13 +19,13 @@ Appwrite is an open-source backend as a service that abstracts common applicatio
 For client-rendered React apps:
 
 ```sh
-pnpm add @appwrite.io/sdk-for-react appwrite @tanstack/react-query
+pnpm add @appwrite.io/react appwrite @tanstack/react-query
 ```
 
 For SSR apps that use the server handlers or admin client, also install `node-appwrite`:
 
 ```sh
-pnpm add @appwrite.io/sdk-for-react appwrite node-appwrite @tanstack/react-query
+pnpm add @appwrite.io/react appwrite node-appwrite @tanstack/react-query
 ```
 
 Framework packages such as `next`, `@tanstack/react-start`, `react`, and `react-dom` should come from your app scaffold.
@@ -35,7 +35,7 @@ Framework packages such as `next`, `@tanstack/react-start`, `react`, and `react-
 Use this setup for Vite or any app where auth is handled directly in the browser.
 
 ```tsx
-import { AppwriteProvider } from "@appwrite.io/sdk-for-react";
+import { AppwriteProvider } from "@appwrite.io/react";
 
 export function Root() {
   return (
@@ -52,7 +52,7 @@ export function Root() {
 Then, for authentication:
 
 ```tsx
-import { useAuth } from "@appwrite.io/sdk-for-react";
+import { useAuth } from "@appwrite.io/react";
 
 export function AuthPanel() {
   const { user, isLoading, signIn, signUp, signOut } = useAuth();
@@ -110,7 +110,7 @@ Create the Appwrite auth handler route:
 
 ```ts
 // app/api/appwrite/[...appwrite]/route.ts
-import { createAppwriteHandlers } from "@appwrite.io/sdk-for-react/handlers/next";
+import { createAppwriteHandlers } from "@appwrite.io/react/handlers/next";
 
 export const { GET, POST } = createAppwriteHandlers({
   endpoint: process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!,
@@ -126,7 +126,7 @@ Pass the server session into the client provider:
 // app/providers.tsx
 "use client";
 
-import { AppwriteProvider } from "@appwrite.io/sdk-for-react";
+import { AppwriteProvider } from "@appwrite.io/react";
 
 export function Providers({
   session,
@@ -149,7 +149,7 @@ export function Providers({
 
 ```tsx
 // app/layout.tsx
-import { readSessionCookie } from "@appwrite.io/sdk-for-react/server/next";
+import { readSessionCookie } from "@appwrite.io/react/server/next";
 import { Providers } from "./providers";
 
 export default async function RootLayout({
@@ -173,8 +173,8 @@ Read SSR auth state and create server-context clients:
 
 ```tsx
 // app/page.tsx
-import { createAdminClient } from "@appwrite.io/sdk-for-react/server";
-import { createNextServerHelpers } from "@appwrite.io/sdk-for-react/server/next";
+import { createAdminClient } from "@appwrite.io/react/server";
+import { createNextServerHelpers } from "@appwrite.io/react/server/next";
 
 const appwrite = {
   endpoint: process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!,
@@ -208,7 +208,7 @@ In client components, use the same hooks. Refresh the router after auth mutation
 // app/auth-panel.tsx
 "use client";
 
-import { useAuth } from "@appwrite.io/sdk-for-react";
+import { useAuth } from "@appwrite.io/react";
 import { useRouter } from "next/navigation";
 
 export function AuthPanel() {
@@ -258,7 +258,7 @@ Create the Appwrite auth handler route:
 ```ts
 // src/routes/api/appwrite/$.ts
 import { createFileRoute } from "@tanstack/react-router";
-import { createAppwriteHandlers } from "@appwrite.io/sdk-for-react/handlers/tanstack";
+import { createAppwriteHandlers } from "@appwrite.io/react/handlers/tanstack";
 
 export const Route = createFileRoute("/api/appwrite/$")({
   server: {
@@ -278,11 +278,11 @@ Read SSR auth state in a server function and pass the session into the provider:
 // src/routes/index.tsx
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
-import { AppwriteProvider, useAuth } from "@appwrite.io/sdk-for-react";
+import { AppwriteProvider, useAuth } from "@appwrite.io/react";
 import {
   createAdminClient,
   createTanStackServerHelpers,
-} from "@appwrite.io/sdk-for-react/server/tanstack";
+} from "@appwrite.io/react/server/tanstack";
 
 const getAuthSnapshot = createServerFn({ method: "GET" }).handler(async () => {
   const appwrite = {
@@ -376,21 +376,21 @@ import {
   useSignOut,
   useSignUp,
   useUser,
-} from "@appwrite.io/sdk-for-react";
+} from "@appwrite.io/react";
 ```
 
 Server entrypoints:
 
 ```ts
-import { createAppwriteHandlers as createNextAppwriteHandlers } from "@appwrite.io/sdk-for-react/handlers/next";
-import { createAppwriteHandlers as createTanStackAppwriteHandlers } from "@appwrite.io/sdk-for-react/handlers/tanstack";
+import { createAppwriteHandlers as createNextAppwriteHandlers } from "@appwrite.io/react/handlers/next";
+import { createAppwriteHandlers as createTanStackAppwriteHandlers } from "@appwrite.io/react/handlers/tanstack";
 
 import {
   createAdminClient,
   createSessionClient,
-} from "@appwrite.io/sdk-for-react/server";
-import { createNextServerHelpers } from "@appwrite.io/sdk-for-react/server/next";
-import { createTanStackServerHelpers } from "@appwrite.io/sdk-for-react/server/tanstack";
+} from "@appwrite.io/react/server";
+import { createNextServerHelpers } from "@appwrite.io/react/server/next";
+import { createTanStackServerHelpers } from "@appwrite.io/react/server/tanstack";
 ```
 
 Do not import server entrypoints from client components or browser-only code.
