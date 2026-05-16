@@ -402,4 +402,4 @@ Do not import server entrypoints from client components or browser-only code.
 
 ## License
 
-Please see the [BSD-3-Clause license](https://raw.githubusercontent.com/appwrite/appwrite/master/LICENSE) file for more information.
+Please see the [MIT license](./LICENSE) file for more information.
