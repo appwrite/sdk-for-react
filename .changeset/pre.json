@@ -2,7 +2,7 @@
   "mode": "pre",
   "tag": "rc",
   "initialVersions": {
-    "@appwrite.io/sdk-for-react": "0.0.1"
+    "@appwrite.io/react": "0.0.1"
   },
   "changesets": [
     "red-areas-send"
