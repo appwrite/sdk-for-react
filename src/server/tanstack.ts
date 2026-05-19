@@ -2,7 +2,7 @@ import "@tanstack/react-start/server-only";
 import { getRequestHeader } from "@tanstack/react-start/server";
 import { Account as NodeAccount, Client as NodeClient } from "node-appwrite";
 import { buildAnonymousClient, buildSessionClient } from "../core/client";
-import { DEFAULT_COOKIE_NAME, resolveConfig } from "../core/config";
+import { resolveConfig, resolveCookieName } from "../core/config";
 import { parseCookieHeader } from "../core/cookie";
 import { createServerHelpersFromCookieReader } from "../core/server";
 import type {
@@ -24,9 +24,12 @@ export type {
   SessionServer,
 } from "../core/types";
 
-export function readSessionCookie(opts?: { cookieName?: string }): string | undefined {
+export function readSessionCookie(opts: {
+  cookieName?: string;
+  projectId?: string;
+}): string | undefined {
   const cookies = parseCookieHeader(getRequestHeader("cookie"));
-  return cookies.get(opts?.cookieName ?? DEFAULT_COOKIE_NAME);
+  return cookies.get(resolveCookieName(opts));
 }
 
 export function createSessionClient(
@@ -68,8 +71,9 @@ export function createAdminClient(config: AdminClientConfig): AdminServer {
 export function createTanStackServerHelpers(
   config: AppwriteSsrConfig,
 ): ServerHelpers & { readSessionCookie(): string | undefined } {
-  const cookieName = config.cookieName ?? DEFAULT_COOKIE_NAME;
+  const resolved = resolveConfig(config);
+  const cookieName = resolved.cookieName;
   const read = () => readSessionCookie({ cookieName });
-  const helpers = createServerHelpersFromCookieReader(resolveConfig(config), read);
+  const helpers = createServerHelpersFromCookieReader(resolved, read);
   return { ...helpers, readSessionCookie: read };
 }

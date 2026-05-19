@@ -7,6 +7,8 @@ import { postHandler } from "./internal/handler";
 type SignInReturnType = {
   /** Whether a sign-in request is currently in progress */
   isPending: boolean;
+  /** Error from the last email/password sign-in mutation, if one occurred */
+  error: Error | null;
   /**
    * Sign in with email and password.
    *
@@ -45,7 +47,11 @@ export function useSignIn(): SignInReturnType {
   const { account, setAuthenticated, ssr } = useAppwrite();
   const queryClient = useQueryClient();
 
-  const { mutate: signIn, isPending } = useMutation<SignInResult, Error, SignInVariables>({
+  const { mutate: signIn, isPending, error } = useMutation<
+    SignInResult,
+    Error,
+    SignInVariables
+  >({
     mutationFn: async ({ email, password }) => {
       if (ssr.enabled) {
         return postHandler<SignInResult>(ssr.basePath, "/sign-in/email-password", {
@@ -123,6 +129,7 @@ export function useSignIn(): SignInReturnType {
 
   return {
     isPending,
+    error,
     emailPassword: ({ email, password, onSuccess, onError }) => {
       signIn(
         { email, password },
