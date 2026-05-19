@@ -45,3 +45,9 @@ export function resolveConfig(config: AppwriteSsrConfig): ResolvedSsrConfig {
 export function getDefaultCookieName(projectId: string): string {
   return `${DEFAULT_COOKIE_NAME_PREFIX}-${projectId}`;
 }
+
+export function resolveCookieName(opts: { cookieName?: string; projectId?: string }): string {
+  if (opts.cookieName) return opts.cookieName;
+  if (opts.projectId) return getDefaultCookieName(opts.projectId);
+  throw new Error("[appwrite-react] readSessionCookie requires cookieName or projectId");
+}

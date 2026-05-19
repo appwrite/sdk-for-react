@@ -2,7 +2,7 @@ import "@tanstack/react-start/server-only";
 import { getRequestHeader } from "@tanstack/react-start/server";
 import { Account as NodeAccount, Client as NodeClient } from "node-appwrite";
 import { buildAnonymousClient, buildSessionClient } from "../core/client";
-import { getDefaultCookieName, resolveConfig } from "../core/config";
+import { resolveConfig, resolveCookieName } from "../core/config";
 import { parseCookieHeader } from "../core/cookie";
 import { createServerHelpersFromCookieReader } from "../core/server";
 import type {
@@ -76,10 +76,4 @@ export function createTanStackServerHelpers(
   const read = () => readSessionCookie({ cookieName });
   const helpers = createServerHelpersFromCookieReader(resolved, read);
   return { ...helpers, readSessionCookie: read };
-}
-
-function resolveCookieName(opts: { cookieName?: string; projectId?: string }): string {
-  if (opts.cookieName) return opts.cookieName;
-  if (opts.projectId) return getDefaultCookieName(opts.projectId);
-  throw new Error("[appwrite-react] readSessionCookie requires cookieName or projectId");
 }

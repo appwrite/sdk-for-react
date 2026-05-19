@@ -59,7 +59,7 @@ export function useAuth(): AuthReturnType {
   const signUp = useSignUp();
   const signIn = useSignIn();
   const signOut = useSignOut();
-  const error = signIn.error ?? signUp.error ?? signOut.error ?? userError;
+  const error = userError ?? signIn.error ?? signUp.error ?? signOut.error;
 
   return { user, isLoading, error, signUp, signIn, signOut };
 }

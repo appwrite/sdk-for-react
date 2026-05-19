@@ -1,6 +1,6 @@
 import "server-only";
 import { cookies } from "next/headers";
-import { getDefaultCookieName, resolveConfig } from "../core/config";
+import { resolveConfig, resolveCookieName } from "../core/config";
 import { createServerHelpersFromCookieReader } from "../core/server";
 import type { AppwriteSsrConfig, ServerHelpers } from "../core/types";
 
@@ -25,10 +25,4 @@ export function createNextServerHelpers(
   const read = () => readSessionCookie({ cookieName });
   const helpers = createServerHelpersFromCookieReader(resolved, read);
   return { ...helpers, readSessionCookie: read };
-}
-
-function resolveCookieName(opts: { cookieName?: string; projectId?: string }): string {
-  if (opts.cookieName) return opts.cookieName;
-  if (opts.projectId) return getDefaultCookieName(opts.projectId);
-  throw new Error("[appwrite-react] readSessionCookie requires cookieName or projectId");
 }
