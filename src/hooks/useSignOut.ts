@@ -5,6 +5,8 @@ import { postHandler } from "./internal/handler";
 
 type SignOutReturnType = {
   isPending: boolean;
+  /** Error from the last sign-out mutation, if one occurred */
+  error: Error | null;
   /**
    * Sign out the current user.
    *
@@ -27,7 +29,7 @@ export function useSignOut(): SignOutReturnType {
   const { account, client, setAuthenticated, ssr } = useAppwrite();
   const queryClient = useQueryClient();
 
-  const { mutate: logout, isPending } = useMutation<void, Error>({
+  const { mutate: logout, isPending, error } = useMutation<void, Error>({
     mutationFn: async () => {
       if (ssr.enabled) {
         await postHandler(ssr.basePath, "/sign-out", {});
@@ -44,6 +46,7 @@ export function useSignOut(): SignOutReturnType {
 
   return {
     isPending,
+    error,
     signOut: (options) => {
       logout(undefined, {
         onSuccess: () => options?.onSuccess?.(),

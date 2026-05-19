@@ -8,6 +8,8 @@ type UserReturnType = {
   user: Models.User<Models.Preferences> | null | undefined;
   /** Whether the user data is currently being fetched */
   isLoading: boolean;
+  /** Error from the current user query, if one occurred */
+  error: Error | null;
 };
 
 /**
@@ -27,7 +29,7 @@ export function useUser(): UserReturnType {
   const hasSession = ssr.enabled ? Boolean(ssr.session) : true;
   const hadServerSession = useRef(hasSession);
 
-  const { data: user, isLoading } = useQuery<Models.User<Models.Preferences> | null>({
+  const { data: user, isLoading, error } = useQuery<Models.User<Models.Preferences> | null>({
     queryKey: ["auth", "user"],
     queryFn: async () => {
       try {
@@ -56,5 +58,6 @@ export function useUser(): UserReturnType {
   return {
     user,
     isLoading: hasSession && isLoading,
+    error,
   };
 }

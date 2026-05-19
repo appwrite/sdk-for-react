@@ -5,7 +5,7 @@ import type {
   ResolvedSsrConfig,
 } from "./types";
 
-export const DEFAULT_COOKIE_NAME = "appwrite-session";
+export const DEFAULT_COOKIE_NAME_PREFIX = "appwrite-session";
 export const OAUTH_STATE_COOKIE_NAME = "appwrite-oauth-state";
 export const OAUTH_STATE_MAX_AGE_SECONDS = 10 * 60;
 export const DEFAULT_BASE_PATH = "/api/appwrite";
@@ -24,7 +24,7 @@ export function resolveConfig(config: AppwriteSsrConfig): ResolvedSsrConfig {
   return {
     endpoint: config.endpoint,
     projectId: config.projectId,
-    cookieName: config.cookieName ?? DEFAULT_COOKIE_NAME,
+    cookieName: config.cookieName ?? getDefaultCookieName(config.projectId),
     cookieOptions: {
       path: config.cookieOptions?.path ?? "/",
       secure: config.cookieOptions?.secure ?? true,
@@ -40,4 +40,8 @@ export function resolveConfig(config: AppwriteSsrConfig): ResolvedSsrConfig {
       failure: config.redirects?.failure ?? "/",
     },
   };
+}
+
+export function getDefaultCookieName(projectId: string): string {
+  return `${DEFAULT_COOKIE_NAME_PREFIX}-${projectId}`;
 }

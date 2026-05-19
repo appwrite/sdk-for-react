@@ -5,6 +5,8 @@ import { postHandler } from "./internal/handler";
 
 type SignUpReturnType = {
   isPending: boolean;
+  /** Error from the last email/password sign-up mutation, if one occurred */
+  error: Error | null;
   /**
    * Create a new user account with email and password, then sign them in.
    *
@@ -29,7 +31,11 @@ export function useSignUp(): SignUpReturnType {
   const { account, setAuthenticated, ssr } = useAppwrite();
   const queryClient = useQueryClient();
 
-  const { mutate: signUp, isPending } = useMutation<SignUpResult, Error, SignUpVariables>({
+  const { mutate: signUp, isPending, error } = useMutation<
+    SignUpResult,
+    Error,
+    SignUpVariables
+  >({
     mutationFn: async ({ email, password, name, userId }) => {
       if (ssr.enabled) {
         return postHandler<SignUpResult>(ssr.basePath, "/sign-up/email-password", {
@@ -52,6 +58,7 @@ export function useSignUp(): SignUpReturnType {
 
   return {
     isPending,
+    error,
     emailPassword: ({ email, password, name, userId, onSuccess, onError }) => {
       signUp(
         { email, password, name, userId },
