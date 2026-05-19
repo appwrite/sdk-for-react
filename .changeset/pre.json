@@ -5,6 +5,7 @@
     "@appwrite.io/react": "0.0.1"
   },
   "changesets": [
+    "grumpy-moments-teach",
     "red-areas-send"
   ]
 }
