@@ -1,15 +1,20 @@
 import { useQuery } from "@tanstack/react-query";
 import { AppwriteException, Models } from "appwrite";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useAppwrite } from "@/components/AppwriteProvider";
+
+const AUTH_USER_STALE_TIME_MS = 5 * 60 * 1000;
+type AuthUser = Models.User<Models.Preferences> | null | undefined;
 
 type UserReturnType = {
   /** The current authenticated user, or null if not authenticated */
-  user: Models.User<Models.Preferences> | null | undefined;
+  user: AuthUser;
   /** Whether the user data is currently being fetched */
   isLoading: boolean;
   /** Error from the current user query, if one occurred */
   error: Error | null;
+  /** Refetch the current authenticated user */
+  refresh: () => Promise<AuthUser>;
 };
 
 /**
@@ -29,7 +34,7 @@ export function useUser(): UserReturnType {
   const hasSession = ssr.enabled ? Boolean(ssr.session) : true;
   const hadServerSession = useRef(hasSession);
 
-  const { data: user, isLoading, error } = useQuery<Models.User<Models.Preferences> | null>({
+  const { data: user, isLoading, error, refetch } = useQuery<Models.User<Models.Preferences> | null>({
     queryKey: ["auth", "user"],
     queryFn: async () => {
       try {
@@ -41,8 +46,12 @@ export function useUser(): UserReturnType {
     },
     enabled: hasSession,
     retry: false,
-    staleTime: Infinity,
+    staleTime: AUTH_USER_STALE_TIME_MS,
   });
+  const refresh = useCallback(async () => {
+    const result = await refetch();
+    return result.data;
+  }, [refetch]);
 
   useEffect(() => {
     if (hasSession) {
@@ -59,5 +68,6 @@ export function useUser(): UserReturnType {
     user,
     isLoading: hasSession && isLoading,
     error,
+    refresh,
   };
 }

@@ -11,6 +11,8 @@ type AuthReturnType = {
   isLoading: boolean;
   /** First current auth error from the user query or auth mutations */
   error: Error | null;
+  /** Refetch the current authenticated user */
+  refresh: ReturnType<typeof useUser>["refresh"];
   /** Sign-up methods and state from useSignUp hook */
   signUp: ReturnType<typeof useSignUp>;
   /** Sign-in methods and state from useSignIn hook (includes OAuth) */
@@ -55,11 +57,11 @@ type AuthReturnType = {
  * ```
  */
 export function useAuth(): AuthReturnType {
-  const { user, isLoading, error: userError } = useUser();
+  const { user, isLoading, error: userError, refresh } = useUser();
   const signUp = useSignUp();
   const signIn = useSignIn();
   const signOut = useSignOut();
   const error = userError ?? signIn.error ?? signUp.error ?? signOut.error;
 
-  return { user, isLoading, error, signUp, signIn, signOut };
+  return { user, isLoading, error, refresh, signUp, signIn, signOut };
 }
