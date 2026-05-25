@@ -4,5 +4,24 @@ export * from "./hooks/useUser";
 export * from "./hooks/useSignIn";
 export * from "./hooks/useSignUp";
 export * from "./hooks/useSignOut";
-// Re-export OAuthProvider from appwrite for convenience
-export { OAuthProvider } from "appwrite";
+export {
+  Account,
+  AppwriteException,
+  Avatars,
+  Channel,
+  Client,
+  Functions,
+  Graphql,
+  ID,
+  Locale,
+  Messaging,
+  OAuthProvider,
+  Permission,
+  Presences,
+  Query,
+  Realtime,
+  Role,
+  Storage,
+  TablesDB,
+  Teams,
+} from "appwrite";
