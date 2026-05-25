@@ -1,5 +1,11 @@
 # @appwrite.io/react
 
+## 0.1.0-rc.2
+
+### Minor Changes
+
+- 5f2954e: Refetch the cached auth user after five minutes instead of treating it as permanently fresh, expose `refresh()` from `useUser()` and `useAuth()` for manual auth state refreshes, make server helper `createSessionClient()` return a seamless node-appwrite session client, and expose client-side Appwrite services from `useAppwrite()`.
+
 ## 0.1.0-rc.1
 
 ### Minor Changes
