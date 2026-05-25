@@ -1,5 +1,18 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Account, Client } from "appwrite";
+import {
+  Account,
+  Avatars,
+  Client,
+  Functions,
+  Graphql,
+  Locale,
+  Messaging,
+  Presences,
+  Realtime,
+  Storage,
+  TablesDB,
+  Teams,
+} from "appwrite";
 import { createContext, useContext, useMemo, useState } from "react";
 import { DEFAULT_BASE_PATH } from "../core/config";
 
@@ -20,6 +33,16 @@ export interface AppwriteSsrProps {
 interface AppwriteContextValue {
   client: Client;
   account: Account;
+  avatars: Avatars;
+  functions: Functions;
+  graphql: Graphql;
+  locale: Locale;
+  messaging: Messaging;
+  presences: Presences;
+  realtime: Realtime;
+  storage: Storage;
+  tablesDB: TablesDB;
+  teams: Teams;
   authenticated: boolean;
   setAuthenticated: React.Dispatch<React.SetStateAction<boolean>>;
   ssr: {
@@ -52,10 +75,23 @@ export function AppwriteProvider({
 
   const [authenticated, setAuthenticated] = useState(() => Boolean(ssr?.session));
 
-  const { client, account } = useMemo(() => {
+  const services = useMemo(() => {
     const c = new Client().setEndpoint(endpoint).setProject(projectId);
     if (ssr?.session) c.setSession(ssr.session);
-    return { client: c, account: new Account(c) };
+    return {
+      client: c,
+      account: new Account(c),
+      avatars: new Avatars(c),
+      functions: new Functions(c),
+      graphql: new Graphql(c),
+      locale: new Locale(c),
+      messaging: new Messaging(c),
+      presences: new Presences(c),
+      realtime: new Realtime(c),
+      storage: new Storage(c),
+      tablesDB: new TablesDB(c),
+      teams: new Teams(c),
+    };
   }, [endpoint, projectId, ssr?.session]);
 
   const ssrEnabled = ssr !== undefined;
@@ -71,13 +107,12 @@ export function AppwriteProvider({
 
   const contextValue = useMemo<AppwriteContextValue>(
     () => ({
-      client,
-      account,
+      ...services,
       authenticated,
       setAuthenticated,
       ssr: ssrConfig,
     }),
-    [client, account, authenticated, ssrConfig],
+    [services, authenticated, ssrConfig],
   );
 
   return (

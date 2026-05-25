@@ -1,5 +1,5 @@
-import { AppwriteException } from "appwrite";
-import { buildSessionClient } from "./client";
+import { AppwriteException } from "node-appwrite";
+import { buildNodeSessionClient } from "./node-client";
 import { toPlain } from "./utils";
 import type { ResolvedSsrConfig, ServerHelpers } from "./types";
 
@@ -11,12 +11,12 @@ export function createServerHelpersFromCookieReader(
     async createSessionClient() {
       const secret = await readCookie();
       if (!secret) return null;
-      return buildSessionClient(config, secret);
+      return buildNodeSessionClient(config, secret);
     },
     async getSession() {
       const secret = await readCookie();
       if (!secret) return null;
-      const { account } = buildSessionClient(config, secret);
+      const { account } = buildNodeSessionClient(config, secret);
       try {
         return toPlain(await account.getSession({ sessionId: "current" }));
       } catch (err) {
@@ -27,7 +27,7 @@ export function createServerHelpersFromCookieReader(
     async getLoggedInUser() {
       const secret = await readCookie();
       if (!secret) return null;
-      const { account } = buildSessionClient(config, secret);
+      const { account } = buildNodeSessionClient(config, secret);
       try {
         return toPlain(await account.get());
       } catch (err) {

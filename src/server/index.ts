@@ -1,7 +1,8 @@
 import "server-only";
 import { Account as NodeAccount, Client as NodeClient } from "node-appwrite";
 import { resolveConfig } from "../core/config";
-import { buildAnonymousClient, buildSessionClient } from "../core/client";
+import { buildAnonymousClient } from "../core/client";
+import { buildNodeSessionClient } from "../core/node-client";
 import { createServerHelpersFromCookieReader } from "../core/server";
 import type {
   AdminServer,
@@ -25,25 +26,8 @@ export type {
 export function createSessionClient(
   config: AppwriteSsrConfig,
   session: string,
-): SessionServer {
-  return buildSessionClient(resolveConfig(config), session);
-}
-
-/**
- * Returns a `node-appwrite` client authenticated as the user via setSession.
- * Use when you want the server SDK ergonomics (same package as createAdminClient,
- * full server feature surface) for per-request user-scoped operations.
- */
-export function createNodeSessionClient(
-  config: AppwriteSsrConfig,
-  session: string,
 ): NodeSessionServer {
-  const resolved = resolveConfig(config);
-  const client = new NodeClient()
-    .setEndpoint(resolved.endpoint)
-    .setProject(resolved.projectId)
-    .setSession(session);
-  return { client, account: new NodeAccount(client) };
+  return buildNodeSessionClient(resolveConfig(config), session);
 }
 
 export function createAnonymousClient(config: AppwriteSsrConfig): SessionServer {
