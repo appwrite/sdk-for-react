@@ -1,4 +1,4 @@
-import type { Models } from "appwrite";
+import type { Models } from "node-appwrite";
 
 export type SameSite = "strict" | "lax" | "none";
 
@@ -96,5 +96,5 @@ export interface AdminServer {
 export interface ServerHelpers {
   getSession(): Promise<Models.Session | null>;
   getLoggedInUser(): Promise<Models.User<Models.Preferences> | null>;
-  createSessionClient(): Promise<SessionServer | null>;
+  createSessionClient(): Promise<NodeSessionServer | null>;
 }

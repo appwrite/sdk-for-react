@@ -1,9 +1,10 @@
 import "@tanstack/react-start/server-only";
 import { getRequestHeader } from "@tanstack/react-start/server";
 import { Account as NodeAccount, Client as NodeClient } from "node-appwrite";
-import { buildAnonymousClient, buildSessionClient } from "../core/client";
+import { buildAnonymousClient } from "../core/client";
 import { resolveConfig, resolveCookieName } from "../core/config";
 import { parseCookieHeader } from "../core/cookie";
+import { buildNodeSessionClient } from "../core/node-client";
 import { createServerHelpersFromCookieReader } from "../core/server";
 import type {
   AdminServer,
@@ -35,20 +36,8 @@ export function readSessionCookie(opts: {
 export function createSessionClient(
   config: AppwriteSsrConfig,
   session: string,
-): SessionServer {
-  return buildSessionClient(resolveConfig(config), session);
-}
-
-export function createNodeSessionClient(
-  config: AppwriteSsrConfig,
-  session: string,
 ): NodeSessionServer {
-  const resolved = resolveConfig(config);
-  const client = new NodeClient()
-    .setEndpoint(resolved.endpoint)
-    .setProject(resolved.projectId)
-    .setSession(session);
-  return { client, account: new NodeAccount(client) };
+  return buildNodeSessionClient(resolveConfig(config), session);
 }
 
 export function createAnonymousClient(config: AppwriteSsrConfig): SessionServer {
