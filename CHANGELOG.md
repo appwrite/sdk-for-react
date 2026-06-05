@@ -1,5 +1,11 @@
 # @appwrite.io/react
 
+## 0.1.0-rc.3
+
+### Patch Changes
+
+- deefb5d: Expose configured admin clients from server helpers and align the optional `node-appwrite` peer with v26.
+
 ## 0.1.0-rc.2
 
 ### Minor Changes
