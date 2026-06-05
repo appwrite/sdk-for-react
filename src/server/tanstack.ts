@@ -6,8 +6,11 @@ import { parseCookieHeader } from "../core/cookie";
 import { buildAdminClient, buildNodeSessionClient } from "../core/node-client";
 import { createServerHelpersFromCookieReader } from "../core/server";
 import type {
+  AdminServerHelpers,
   AdminServer,
+  AppwriteAdminServerConfig,
   AppwriteServerConfig,
+  AppwriteServerConfigWithoutApiKey,
   AppwriteSsrConfig,
   NodeSessionServer,
   ServerHelpers,
@@ -15,9 +18,12 @@ import type {
 } from "../core/types";
 
 export type {
+  AdminServerHelpers,
   AdminServer,
+  AppwriteAdminServerConfig,
   AppwriteHandlerConfig,
   AppwriteServerConfig,
+  AppwriteServerConfigWithoutApiKey,
   AppwriteSsrConfig,
   CookieOptions,
   NodeSessionServer,
@@ -55,8 +61,20 @@ export function createAdminClient(config: AdminClientConfig): AdminServer {
 }
 
 export function createTanStackServerHelpers(
+  config: AppwriteAdminServerConfig,
+): AdminServerHelpers & { readSessionCookie(): string | undefined };
+
+export function createTanStackServerHelpers(
+  config: AppwriteServerConfigWithoutApiKey,
+): ServerHelpers & { readSessionCookie(): string | undefined };
+
+export function createTanStackServerHelpers(
   config: AppwriteServerConfig,
-): ServerHelpers & { readSessionCookie(): string | undefined } {
+): (AdminServerHelpers | ServerHelpers) & { readSessionCookie(): string | undefined };
+
+export function createTanStackServerHelpers(
+  config: AppwriteServerConfig,
+): (AdminServerHelpers | ServerHelpers) & { readSessionCookie(): string | undefined } {
   const resolved = resolveConfig(config);
   const cookieName = resolved.cookieName;
   const read = () => readSessionCookie({ cookieName });

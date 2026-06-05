@@ -4,8 +4,11 @@ import { buildAnonymousClient } from "../core/client";
 import { buildAdminClient, buildNodeSessionClient } from "../core/node-client";
 import { createServerHelpersFromCookieReader } from "../core/server";
 import type {
+  AdminServerHelpers,
   AdminServer,
+  AppwriteAdminServerConfig,
   AppwriteServerConfig,
+  AppwriteServerConfigWithoutApiKey,
   AppwriteSsrConfig,
   NodeSessionServer,
   ServerHelpers,
@@ -13,9 +16,12 @@ import type {
 } from "../core/types";
 
 export type {
+  AdminServerHelpers,
   AdminServer,
+  AppwriteAdminServerConfig,
   AppwriteHandlerConfig,
   AppwriteServerConfig,
+  AppwriteServerConfigWithoutApiKey,
   AppwriteSsrConfig,
   CookieOptions,
   NodeSessionServer,
@@ -51,9 +57,24 @@ export function createAdminClient(config: AdminClientConfig): AdminServer {
 }
 
 export function createServerHelpers(
+  config: AppwriteAdminServerConfig,
+  readCookie: () => string | undefined | Promise<string | undefined>,
+): AdminServerHelpers;
+
+export function createServerHelpers(
+  config: AppwriteServerConfigWithoutApiKey,
+  readCookie: () => string | undefined | Promise<string | undefined>,
+): ServerHelpers;
+
+export function createServerHelpers(
   config: AppwriteServerConfig,
   readCookie: () => string | undefined | Promise<string | undefined>,
-): ServerHelpers {
+): AdminServerHelpers | ServerHelpers;
+
+export function createServerHelpers(
+  config: AppwriteServerConfig,
+  readCookie: () => string | undefined | Promise<string | undefined>,
+): AdminServerHelpers | ServerHelpers {
   return createServerHelpersFromCookieReader(
     { ...resolveConfig(config), apiKey: config.apiKey },
     readCookie,

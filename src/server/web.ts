@@ -2,11 +2,33 @@ import "server-only";
 import { resolveConfig } from "../core/config";
 import { parseCookieHeader } from "../core/cookie";
 import { createServerHelpersFromCookieReader } from "../core/server";
-import type { AppwriteServerConfig, ServerHelpers } from "../core/types";
+import type {
+  AdminServerHelpers,
+  AppwriteAdminServerConfig,
+  AppwriteServerConfig,
+  AppwriteServerConfigWithoutApiKey,
+  ServerHelpers,
+} from "../core/types";
+
+export function createWebServerHelpers(
+  config: AppwriteAdminServerConfig,
+): (request: Request) => AdminServerHelpers & { readSessionCookie(): string | undefined };
+
+export function createWebServerHelpers(
+  config: AppwriteServerConfigWithoutApiKey,
+): (request: Request) => ServerHelpers & { readSessionCookie(): string | undefined };
 
 export function createWebServerHelpers(
   config: AppwriteServerConfig,
-): (request: Request) => ServerHelpers & { readSessionCookie(): string | undefined } {
+): (request: Request) => (AdminServerHelpers | ServerHelpers) & {
+  readSessionCookie(): string | undefined;
+};
+
+export function createWebServerHelpers(
+  config: AppwriteServerConfig,
+): (request: Request) => (AdminServerHelpers | ServerHelpers) & {
+  readSessionCookie(): string | undefined;
+} {
   const resolved = resolveConfig(config);
   const cookieName = resolved.cookieName;
 

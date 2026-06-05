@@ -301,7 +301,6 @@ const getAuthSnapshot = createServerFn({ method: "GET" }).handler(async () => {
     session: helpers.readSessionCookie() ?? null,
     user,
     hasSessionClient: Boolean(sessionClient),
-    hasAdminClient: Boolean(adminClient.client),
     adminUserCount: users.users.length,
   };
 });
@@ -312,8 +311,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Page() {
-  const { session, user, hasSessionClient, hasAdminClient } =
-    Route.useLoaderData();
+  const { session, user, hasSessionClient, adminUserCount } = Route.useLoaderData();
 
   return (
     <AppwriteProvider
@@ -324,7 +322,7 @@ function Page() {
       <main>
         <p>SSR user: {user?.email ?? "signed out"}</p>
         <p>Session client: {hasSessionClient ? "available" : "none"}</p>
-        <p>Admin client: {hasAdminClient ? "available" : "none"}</p>
+        <p>Admin users loaded: {adminUserCount}</p>
         <AuthPanel />
       </main>
     </AppwriteProvider>

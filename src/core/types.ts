@@ -28,6 +28,14 @@ export interface AppwriteServerConfig extends AppwriteSsrConfig {
   apiKey?: string;
 }
 
+export interface AppwriteServerConfigWithoutApiKey extends AppwriteSsrConfig {
+  apiKey?: undefined;
+}
+
+export interface AppwriteAdminServerConfig extends AppwriteSsrConfig {
+  apiKey: string;
+}
+
 /**
  * Handler-specific config. Requires an Appwrite API key because Appwrite only
  * returns `session.secret` (the value we put in the cookie) when a session is
@@ -58,6 +66,14 @@ export interface ResolvedSsrConfig {
 
 export interface ResolvedServerConfig extends ResolvedSsrConfig {
   apiKey?: string;
+}
+
+export interface ResolvedServerConfigWithoutApiKey extends ResolvedSsrConfig {
+  apiKey?: undefined;
+}
+
+export interface ResolvedAdminServerConfig extends ResolvedSsrConfig {
+  apiKey: string;
 }
 
 export interface ResolvedHandlerConfig extends ResolvedSsrConfig {
@@ -127,5 +143,8 @@ export interface ServerHelpers {
   getSession(): Promise<Models.Session | null>;
   getLoggedInUser(): Promise<Models.User<Models.Preferences> | null>;
   createSessionClient(): Promise<NodeSessionServer | null>;
+}
+
+export interface AdminServerHelpers extends ServerHelpers {
   createAdminClient(): AdminServer;
 }

@@ -1,13 +1,34 @@
 import { AppwriteException } from "node-appwrite";
 import { buildAdminClient, buildNodeSessionClient } from "./node-client";
 import { toPlain } from "./utils";
-import type { ResolvedServerConfig, ServerHelpers } from "./types";
+import type {
+  AdminServerHelpers,
+  ResolvedAdminServerConfig,
+  ResolvedServerConfig,
+  ResolvedServerConfigWithoutApiKey,
+  ServerHelpers,
+} from "./types";
+
+export function createServerHelpersFromCookieReader(
+  config: ResolvedAdminServerConfig,
+  readCookie: () => string | undefined | Promise<string | undefined>,
+): AdminServerHelpers;
+
+export function createServerHelpersFromCookieReader(
+  config: ResolvedServerConfigWithoutApiKey,
+  readCookie: () => string | undefined | Promise<string | undefined>,
+): ServerHelpers;
 
 export function createServerHelpersFromCookieReader(
   config: ResolvedServerConfig,
   readCookie: () => string | undefined | Promise<string | undefined>,
-): ServerHelpers {
-  return {
+): AdminServerHelpers | ServerHelpers;
+
+export function createServerHelpersFromCookieReader(
+  config: ResolvedServerConfig,
+  readCookie: () => string | undefined | Promise<string | undefined>,
+): ServerHelpers | AdminServerHelpers {
+  const helpers: ServerHelpers = {
     async createSessionClient() {
       const secret = await readCookie();
       if (!secret) return null;
@@ -35,11 +56,17 @@ export function createServerHelpersFromCookieReader(
         throw err;
       }
     },
+  };
+
+  const apiKey = config.apiKey;
+  if (!apiKey) {
+    return helpers;
+  }
+
+  return {
+    ...helpers,
     createAdminClient() {
-      if (!config.apiKey) {
-        throw new Error("[appwrite-react] config.apiKey is required for createAdminClient()");
-      }
-      return buildAdminClient(config, config.apiKey);
+      return buildAdminClient(config, apiKey);
     },
   };
 }
