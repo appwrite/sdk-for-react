@@ -24,6 +24,10 @@ export interface AppwriteSsrConfig {
   };
 }
 
+export interface AppwriteServerConfig extends AppwriteSsrConfig {
+  apiKey?: string;
+}
+
 /**
  * Handler-specific config. Requires an Appwrite API key because Appwrite only
  * returns `session.secret` (the value we put in the cookie) when a session is
@@ -50,6 +54,10 @@ export interface ResolvedSsrConfig {
     success: string;
     failure: string;
   };
+}
+
+export interface ResolvedServerConfig extends ResolvedSsrConfig {
+  apiKey?: string;
 }
 
 export interface ResolvedHandlerConfig extends ResolvedSsrConfig {
@@ -90,11 +98,34 @@ export interface NodeSessionServer {
 
 export interface AdminServer {
   account: import("node-appwrite").Account;
+  activities: import("node-appwrite").Activities;
+  advisor: import("node-appwrite").Advisor;
+  avatars: import("node-appwrite").Avatars;
+  backups: import("node-appwrite").Backups;
   client: import("node-appwrite").Client;
+  databases: import("node-appwrite").Databases;
+  functions: import("node-appwrite").Functions;
+  graphql: import("node-appwrite").Graphql;
+  health: import("node-appwrite").Health;
+  locale: import("node-appwrite").Locale;
+  messaging: import("node-appwrite").Messaging;
+  organization: import("node-appwrite").Organization;
+  presences: import("node-appwrite").Presences;
+  project: import("node-appwrite").Project;
+  proxy: import("node-appwrite").Proxy;
+  sites: import("node-appwrite").Sites;
+  storage: import("node-appwrite").Storage;
+  tablesDB: import("node-appwrite").TablesDB;
+  teams: import("node-appwrite").Teams;
+  tokens: import("node-appwrite").Tokens;
+  usage: import("node-appwrite").Usage;
+  users: import("node-appwrite").Users;
+  webhooks: import("node-appwrite").Webhooks;
 }
 
 export interface ServerHelpers {
   getSession(): Promise<Models.Session | null>;
   getLoggedInUser(): Promise<Models.User<Models.Preferences> | null>;
   createSessionClient(): Promise<NodeSessionServer | null>;
+  createAdminClient(): AdminServer;
 }

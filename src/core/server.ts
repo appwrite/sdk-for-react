@@ -1,10 +1,10 @@
 import { AppwriteException } from "node-appwrite";
-import { buildNodeSessionClient } from "./node-client";
+import { buildAdminClient, buildNodeSessionClient } from "./node-client";
 import { toPlain } from "./utils";
-import type { ResolvedSsrConfig, ServerHelpers } from "./types";
+import type { ResolvedServerConfig, ServerHelpers } from "./types";
 
 export function createServerHelpersFromCookieReader(
-  config: ResolvedSsrConfig,
+  config: ResolvedServerConfig,
   readCookie: () => string | undefined | Promise<string | undefined>,
 ): ServerHelpers {
   return {
@@ -34,6 +34,12 @@ export function createServerHelpersFromCookieReader(
         if (err instanceof AppwriteException && err.code === 401) return null;
         throw err;
       }
+    },
+    createAdminClient() {
+      if (!config.apiKey) {
+        throw new Error("[appwrite-react] config.apiKey is required for createAdminClient()");
+      }
+      return buildAdminClient(config, config.apiKey);
     },
   };
 }

@@ -20,7 +20,7 @@
         "eslint-plugin-react-hooks": "^5.2.0",
         "globals": "^16.3.0",
         "next": "^16.2.4",
-        "node-appwrite": "^24.0.0",
+        "node-appwrite": "^26.0.0",
         "react": "^19.1.1",
         "react-dom": "^19.1.1",
         "rolldown": "^1.0.0-beta.55",
@@ -35,7 +35,7 @@
         "@tanstack/react-start": "^1.0.0",
         "appwrite": "^25.2.0",
         "next": ">=15.0.0",
-        "node-appwrite": "^24.0.0",
+        "node-appwrite": "^26.0.0",
         "react": "^18.0.0 || ^19.0.0",
         "react-dom": "^18.0.0 || ^19.0.0",
       },
@@ -761,7 +761,7 @@
 
     "next": ["next@16.2.4", "", { "dependencies": { "@next/env": "16.2.4", "@swc/helpers": "0.5.15", "baseline-browser-mapping": "^2.9.19", "caniuse-lite": "^1.0.30001579", "postcss": "8.4.31", "styled-jsx": "5.1.6" }, "optionalDependencies": { "@next/swc-darwin-arm64": "16.2.4", "@next/swc-darwin-x64": "16.2.4", "@next/swc-linux-arm64-gnu": "16.2.4", "@next/swc-linux-arm64-musl": "16.2.4", "@next/swc-linux-x64-gnu": "16.2.4", "@next/swc-linux-x64-musl": "16.2.4", "@next/swc-win32-arm64-msvc": "16.2.4", "@next/swc-win32-x64-msvc": "16.2.4", "sharp": "^0.34.5" }, "peerDependencies": { "@opentelemetry/api": "^1.1.0", "@playwright/test": "^1.51.1", "babel-plugin-react-compiler": "*", "react": "^18.2.0 || 19.0.0-rc-de68d2f4-20241204 || ^19.0.0", "react-dom": "^18.2.0 || 19.0.0-rc-de68d2f4-20241204 || ^19.0.0", "sass": "^1.3.0" }, "optionalPeers": ["@opentelemetry/api", "@playwright/test", "babel-plugin-react-compiler", "sass"], "bin": { "next": "dist/bin/next" } }, "sha512-kPvz56wF5frc+FxlHI5qnklCzbq53HTwORaWBGdT0vNoKh1Aya9XC8aPauH4NJxqtzbWsS5mAbctm4cr+EkQ2Q=="],
 
-    "node-appwrite": ["node-appwrite@24.0.0", "", { "dependencies": { "json-bigint": "1.0.0", "node-fetch-native-with-agent": "1.7.2" } }, "sha512-6oPNGkNHMcBAcu2GmaOTl4uCrabEcin0NzHRlE8lBfsduG+o4MtYjdLoXlA0IdGtlkFFa+qA4Hmkb7Z7By0ySQ=="],
+    "node-appwrite": ["node-appwrite@26.0.0", "", { "dependencies": { "json-bigint": "1.0.0", "node-fetch-native-with-agent": "1.7.2" } }, "sha512-BqzZtpySS0/M9itRPLYLIUpZuO8nJ+ESkCw5czJTixaLVSokcsqwHqW5dONCQ4yQKdX67287/4Ei73RjLOVuFg=="],
 
     "node-fetch-native-with-agent": ["node-fetch-native-with-agent@1.7.2", "", {}, "sha512-5MaOOCuJEvcckoz7/tjdx1M6OusOY6Xc5f459IaruGStWnKzlI1qpNgaAwmn4LmFYcsSlj+jBMk84wmmRxfk5g=="],
 

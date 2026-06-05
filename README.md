@@ -179,12 +179,12 @@ Read SSR auth state and create server-context clients:
 
 ```tsx
 // app/page.tsx
-import { createAdminClient } from "@appwrite.io/react/server";
 import { createNextServerHelpers } from "@appwrite.io/react/server/next";
 
 const appwrite = {
   endpoint: process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!,
   projectId: process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID!,
+  apiKey: process.env.APPWRITE_API_KEY!,
 };
 
 export default async function Page() {
@@ -192,17 +192,14 @@ export default async function Page() {
 
   const user = await helpers.getLoggedInUser();
   const sessionClient = await helpers.createSessionClient();
-
-  const adminClient = createAdminClient({
-    ...appwrite,
-    apiKey: process.env.APPWRITE_API_KEY!,
-  });
+  const adminClient = helpers.createAdminClient();
+  const users = await adminClient.users.list({ total: false });
 
   return (
     <main>
       <p>SSR user: {user?.email ?? "signed out"}</p>
       <p>Session client: {sessionClient ? "available" : "none"}</p>
-      <p>Admin client: {adminClient.client ? "available" : "none"}</p>
+      <p>Admin users loaded: {users.users.length}</p>
     </main>
   );
 }
@@ -285,30 +282,27 @@ Read SSR auth state in a server function and pass the session into the provider:
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { AppwriteProvider, useAuth } from "@appwrite.io/react";
-import {
-  createAdminClient,
-  createTanStackServerHelpers,
-} from "@appwrite.io/react/server/tanstack";
+import { createTanStackServerHelpers } from "@appwrite.io/react/server/tanstack";
 
 const getAuthSnapshot = createServerFn({ method: "GET" }).handler(async () => {
   const appwrite = {
     endpoint: import.meta.env.VITE_APPWRITE_ENDPOINT,
     projectId: import.meta.env.VITE_APPWRITE_PROJECT_ID,
+    apiKey: process.env.APPWRITE_API_KEY!,
   };
 
   const helpers = createTanStackServerHelpers(appwrite);
   const user = await helpers.getLoggedInUser();
   const sessionClient = await helpers.createSessionClient();
-  const adminClient = createAdminClient({
-    ...appwrite,
-    apiKey: process.env.APPWRITE_API_KEY!,
-  });
+  const adminClient = helpers.createAdminClient();
+  const users = await adminClient.users.list({ total: false });
 
   return {
     session: helpers.readSessionCookie() ?? null,
     user,
     hasSessionClient: Boolean(sessionClient),
     hasAdminClient: Boolean(adminClient.client),
+    adminUserCount: users.users.length,
   };
 });
 

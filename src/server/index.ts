@@ -1,11 +1,11 @@
 import "server-only";
-import { Account as NodeAccount, Client as NodeClient } from "node-appwrite";
 import { resolveConfig } from "../core/config";
 import { buildAnonymousClient } from "../core/client";
-import { buildNodeSessionClient } from "../core/node-client";
+import { buildAdminClient, buildNodeSessionClient } from "../core/node-client";
 import { createServerHelpersFromCookieReader } from "../core/server";
 import type {
   AdminServer,
+  AppwriteServerConfig,
   AppwriteSsrConfig,
   NodeSessionServer,
   ServerHelpers,
@@ -15,6 +15,7 @@ import type {
 export type {
   AdminServer,
   AppwriteHandlerConfig,
+  AppwriteServerConfig,
   AppwriteSsrConfig,
   CookieOptions,
   NodeSessionServer,
@@ -46,16 +47,15 @@ export interface AdminClientConfig extends AppwriteSsrConfig {
  */
 export function createAdminClient(config: AdminClientConfig): AdminServer {
   const resolved = resolveConfig(config);
-  const client = new NodeClient()
-    .setEndpoint(resolved.endpoint)
-    .setProject(resolved.projectId)
-    .setKey(config.apiKey);
-  return { client, account: new NodeAccount(client) };
+  return buildAdminClient(resolved, config.apiKey);
 }
 
 export function createServerHelpers(
-  config: AppwriteSsrConfig,
+  config: AppwriteServerConfig,
   readCookie: () => string | undefined | Promise<string | undefined>,
 ): ServerHelpers {
-  return createServerHelpersFromCookieReader(resolveConfig(config), readCookie);
+  return createServerHelpersFromCookieReader(
+    { ...resolveConfig(config), apiKey: config.apiKey },
+    readCookie,
+  );
 }

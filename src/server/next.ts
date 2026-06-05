@@ -2,7 +2,7 @@ import "server-only";
 import { cookies } from "next/headers";
 import { resolveConfig, resolveCookieName } from "../core/config";
 import { createServerHelpersFromCookieReader } from "../core/server";
-import type { AppwriteSsrConfig, ServerHelpers } from "../core/types";
+import type { AppwriteServerConfig, ServerHelpers } from "../core/types";
 
 /**
  * Read the session secret from the request cookie. Prefer the configured
@@ -18,11 +18,14 @@ export async function readSessionCookie(opts: {
 }
 
 export function createNextServerHelpers(
-  config: AppwriteSsrConfig,
+  config: AppwriteServerConfig,
 ): ServerHelpers & { readSessionCookie(): Promise<string | undefined> } {
   const resolved = resolveConfig(config);
   const cookieName = resolved.cookieName;
   const read = () => readSessionCookie({ cookieName });
-  const helpers = createServerHelpersFromCookieReader(resolved, read);
+  const helpers = createServerHelpersFromCookieReader(
+    { ...resolved, apiKey: config.apiKey },
+    read,
+  );
   return { ...helpers, readSessionCookie: read };
 }

@@ -2,10 +2,10 @@ import "server-only";
 import { resolveConfig } from "../core/config";
 import { parseCookieHeader } from "../core/cookie";
 import { createServerHelpersFromCookieReader } from "../core/server";
-import type { AppwriteSsrConfig, ServerHelpers } from "../core/types";
+import type { AppwriteServerConfig, ServerHelpers } from "../core/types";
 
 export function createWebServerHelpers(
-  config: AppwriteSsrConfig,
+  config: AppwriteServerConfig,
 ): (request: Request) => ServerHelpers & { readSessionCookie(): string | undefined } {
   const resolved = resolveConfig(config);
   const cookieName = resolved.cookieName;
@@ -13,7 +13,10 @@ export function createWebServerHelpers(
   return (request: Request) => {
     const cookies = parseCookieHeader(request.headers.get("cookie"));
     const read = () => cookies.get(cookieName);
-    const helpers = createServerHelpersFromCookieReader(resolved, read);
+    const helpers = createServerHelpersFromCookieReader(
+      { ...resolved, apiKey: config.apiKey },
+      read,
+    );
     return { ...helpers, readSessionCookie: read };
   };
 }
