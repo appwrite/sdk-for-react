@@ -1,5 +1,11 @@
 # @appwrite.io/react
 
+## 0.1.1
+
+### Patch Changes
+
+- 6ba0d26: Refresh development dependencies and the Bun lockfile to resolve reported security advisories. Production dependencies and public peer dependency ranges are unchanged.
+
 ## 0.1.0
 
 ### Minor Changes
